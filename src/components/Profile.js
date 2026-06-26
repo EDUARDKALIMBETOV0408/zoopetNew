@@ -31,7 +31,6 @@ export function Profile(store) {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // --- Управление видимостью полей в зависимости от роли ---
     function updateVisibility(user) {
         if (!user) return;
         if (user.isAdmin) {
@@ -49,7 +48,6 @@ export function Profile(store) {
         }
     }
 
-    // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
         if (!user || user.isAdmin) return;
@@ -108,7 +106,6 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
         if (!user || user.isAdmin) return;
@@ -163,7 +160,6 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Сохранение профиля (только для обычных пользователей) ---
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = store.getState().user;
@@ -182,7 +178,6 @@ export function Profile(store) {
         globalThis.renderUserArea();
     });
 
-    // --- Выход ---
     document.getElementById('logoutBtn').addEventListener('click', function() {
         store.dispatch(setUser(null));
         LocalStorageService.saveUser(null);
@@ -191,7 +186,6 @@ export function Profile(store) {
         globalThis.showToast('👋 Вы вышли из аккаунта');
     });
 
-    // --- Админ-панель ---
     function renderAdminPanel() {
         const user = store.getState().user;
         if (user && user.isAdmin) {
@@ -211,7 +205,6 @@ export function Profile(store) {
         }
     }
 
-    // --- Открытие профиля ---
     function open() {
         console.log('🔵 Profile.open() вызван');
         const user = store.getState().user;
@@ -240,25 +233,28 @@ export function Profile(store) {
         addPetForm.classList.remove('open');
         renderAdminPanel();
         modal.classList.add('open');
+        // Обновляем переводы при открытии
+        updateUI();
         console.log('✅ Профиль открыт');
     }
 
-    // --- Обновление UI при смене языка (новый метод) ---
+    // === ОБНОВЛЕНИЕ UI ПРИ СМЕНЕ ЯЗЫКА ===
     function updateUI() {
         const user = store.getState().user;
         if (!user || !modal.classList.contains('open')) return;
 
-        // Обновляем заголовки и кнопки с data-i18n внутри модалки
+        // Обновляем все элементы с data-i18n внутри модалки
         const elements = modal.querySelectorAll('[data-i18n]');
         elements.forEach(el => {
             const key = el.getAttribute('data-i18n');
-            el.textContent = t(key);
+            if (key) el.textContent = t(key);
         });
+
         // Обновляем placeholder'ы
         const placeholders = modal.querySelectorAll('[data-i18n-placeholder]');
         placeholders.forEach(el => {
             const key = el.getAttribute('data-i18n-placeholder');
-            el.placeholder = t(key);
+            if (key) el.placeholder = t(key);
         });
 
         // Перерисовываем адреса и питомцев, если они видны
@@ -266,14 +262,20 @@ export function Profile(store) {
             renderAddresses();
             renderPets();
         }
-        // Обновляем статус (если есть)
-        if (profileStatus.textContent) {
-            // если статус содержит переводимую строку, можно обновить
-        }
-        // Обновляем админ-панель (она тоже может иметь переводы)
+
+        // Обновляем статус, если он содержит текст, который можно перевести (например, "✅ Данные сохранены!")
+        // Мы не будем автоматически переводить статус, потому что он может быть динамическим.
+        // Но если он содержит какой-то ключ, можно его обновить, но обычно он устанавливается из t().
+        // Поэтому просто оставим как есть.
+
+        // Обновляем админ-панель (она может содержать переводы)
         if (adminPanelComponent) {
             adminPanelComponent.update();
         }
+
+        // Обновляем кнопки, которые могут быть внутри профиля (например, "Сохранить изменения")
+        // Они уже обновлены через data-i18n.
+
         console.log('🔄 Profile UI updated after language change');
     }
 
@@ -291,6 +293,14 @@ export function Profile(store) {
                     profilePets.innerHTML = '';
                 }
                 renderAdminPanel();
+                // При обновлении состояния также обновляем переводы на случай смены языка,
+                // но мы уже вызываем updateUI из app.js при смене языка.
+                // Здесь можно вызвать updateUI(), но чтобы избежать лишних вызовов, не будем.
+                // Однако, если язык изменился через store (например, при инициализации), то это учтётся.
+                // Но в подписке мы не знаем, изменился ли язык, поэтому лучше вызывать updateUI при любом обновлении, если модалка открыта.
+                // Для простоты вызовем:
+                // updateUI();
+                // Но это может привести к излишней перерисовке. Лучше вызывать только при смене языка из app.js.
             }
         }
     });
