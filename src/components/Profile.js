@@ -19,13 +19,11 @@ export function Profile(store) {
 
     let adminPanelComponent = null;
 
-    // Закрытие
     document.getElementById('profileCloseBtn').addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
         if (!user) return;
@@ -84,7 +82,6 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
         if (!user) return;
@@ -139,7 +136,6 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Сохранение профиля ---
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = store.getState().user;
@@ -154,7 +150,6 @@ export function Profile(store) {
         globalThis.renderUserArea();
     });
 
-    // --- Выход ---
     document.getElementById('logoutBtn').addEventListener('click', function() {
         store.dispatch(setUser(null));
         LocalStorageService.saveUser(null);
@@ -163,7 +158,6 @@ export function Profile(store) {
         globalThis.showToast('👋 Вы вышли из аккаунта');
     });
 
-    // --- Админ-панель ---
     function renderAdminPanel() {
         const user = store.getState().user;
         if (user && user.isAdmin) {
@@ -183,12 +177,11 @@ export function Profile(store) {
         }
     }
 
-    // --- Открытие профиля (ГЛАВНЫЙ МЕТОД) ---
+    // === ОТКРЫТИЕ ПРОФИЛЯ ===
     function open() {
-        console.log('Profile.open() called');
+        console.log('🔵 Profile.open() вызван');
         const user = store.getState().user;
         if (!user) {
-            console.warn('Profile.open: no user');
             globalThis.showToast('Пожалуйста, войдите в аккаунт');
             return;
         }
@@ -203,10 +196,9 @@ export function Profile(store) {
         addPetForm.classList.remove('open');
         renderAdminPanel();
         modal.classList.add('open');
-        console.log('Profile modal opened');
+        console.log('✅ Профиль открыт');
     }
 
-    // Подписка на обновления (перерисовка адресов/питомцев при изменении пользователя)
     store.subscribe((state) => {
         if (modal.classList.contains('open')) {
             const user = state.user;
