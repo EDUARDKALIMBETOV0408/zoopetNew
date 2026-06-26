@@ -19,11 +19,13 @@ export function Profile(store) {
 
     let adminPanelComponent = null;
 
+    // Закрытие
     document.getElementById('profileCloseBtn').addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
+    // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
         if (!user) return;
@@ -82,6 +84,7 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
+    // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
         if (!user) return;
@@ -136,6 +139,7 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
+    // --- Сохранение профиля ---
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = store.getState().user;
@@ -150,6 +154,7 @@ export function Profile(store) {
         globalThis.renderUserArea();
     });
 
+    // --- Выход ---
     document.getElementById('logoutBtn').addEventListener('click', function() {
         store.dispatch(setUser(null));
         LocalStorageService.saveUser(null);
@@ -158,26 +163,30 @@ export function Profile(store) {
         globalThis.showToast('👋 Вы вышли из аккаунта');
     });
 
+    // --- Админ-панель ---
     function renderAdminPanel() {
         const user = store.getState().user;
         if (user && user.isAdmin) {
             adminPanel.style.display = 'block';
             if (!adminPanelComponent) {
+                // Создаём экземпляр AdminPanel
                 adminPanelComponent = AdminPanel(store);
+                // Вставляем его DOM-элемент после заголовка h4
                 const header = adminPanel.querySelector('h4');
                 if (header) {
-                    header.after(adminPanelComponent);
+                    header.after(adminPanelComponent.element);
                 } else {
-                    adminPanel.prepend(adminPanelComponent);
+                    adminPanel.prepend(adminPanelComponent.element);
                 }
             }
+            // Обновляем содержимое админ-панели
             adminPanelComponent.update();
         } else {
             adminPanel.style.display = 'none';
         }
     }
 
-    // === ОТКРЫТИЕ ПРОФИЛЯ ===
+    // --- Открытие профиля ---
     function open() {
         console.log('🔵 Profile.open() вызван');
         const user = store.getState().user;
@@ -199,6 +208,7 @@ export function Profile(store) {
         console.log('✅ Профиль открыт');
     }
 
+    // Подписка на изменения (для перерисовки адресов/питомцев, если профиль открыт)
     store.subscribe((state) => {
         if (modal.classList.contains('open')) {
             const user = state.user;
