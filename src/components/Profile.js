@@ -1,15 +1,11 @@
 // src/components/Profile.js
 import { t } from '../services/i18n.js';
 import { LocalStorageService } from '../services/localStorageService.js';
-import { setUser, addProduct, updateProduct, setProducts, setOrders } from '../store/actions.js';
-import { GitHubService } from '../services/githubService.js';
+import { setUser } from '../store/actions.js';
 import { AdminPanel } from './AdminPanel.js';
 
 export function Profile(store) {
     const modal = document.getElementById('profileModal');
-    const container = modal.querySelector('.modal');
-
-    // Элементы
     const profFirstName = document.getElementById('profFirstName');
     const profLastName = document.getElementById('profLastName');
     const profPhone = document.getElementById('profPhone');
@@ -174,7 +170,6 @@ export function Profile(store) {
             adminPanel.style.display = 'block';
             if (!adminPanelComponent) {
                 adminPanelComponent = AdminPanel(store);
-                // Вставляем после заголовка админ-панели
                 const header = adminPanel.querySelector('h4');
                 if (header) {
                     header.after(adminPanelComponent);
@@ -210,7 +205,6 @@ export function Profile(store) {
         if (modal.classList.contains('open')) {
             const user = state.user;
             if (user) {
-                // обновляем только если изменились данные (можно проверять по длине, но для простоты перерисовываем)
                 renderAddresses();
                 renderPets();
                 renderAdminPanel();
