@@ -19,13 +19,11 @@ export function Profile(store) {
 
     let adminPanelComponent = null;
 
-    // Закрытие
     document.getElementById('profileCloseBtn').addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
         if (!user) return;
@@ -69,7 +67,7 @@ export function Profile(store) {
         const city = document.getElementById('addrCity').value.trim();
         const postal = document.getElementById('addrPostal').value.trim();
         if (!street || !city || !postal) {
-            window.showToast('Заполните все поля');
+            globalThis.showToast('Заполните все поля');
             return;
         }
         const user = store.getState().user;
@@ -81,10 +79,9 @@ export function Profile(store) {
         store.dispatch(setUser(user));
         renderAddresses();
         addAddressForm.classList.remove('open');
-        window.showToast(t('toast_profile_saved'));
+        globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
         if (!user) return;
@@ -125,7 +122,7 @@ export function Profile(store) {
         const type = document.getElementById('petType').value.trim();
         const birthday = document.getElementById('petBirthday').value;
         if (!name) {
-            window.showToast('Введите имя питомца');
+            globalThis.showToast('Введите имя питомца');
             return;
         }
         const user = store.getState().user;
@@ -136,10 +133,9 @@ export function Profile(store) {
         store.dispatch(setUser(user));
         renderPets();
         addPetForm.classList.remove('open');
-        window.showToast(t('toast_profile_saved'));
+        globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Сохранение профиля ---
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = store.getState().user;
@@ -150,20 +146,18 @@ export function Profile(store) {
         LocalStorageService.saveUser(user);
         store.dispatch(setUser(user));
         profileStatus.textContent = t('toast_profile_saved');
-        window.showToast(t('toast_profile_saved'));
-        window.renderUserArea();
+        globalThis.showToast(t('toast_profile_saved'));
+        globalThis.renderUserArea();
     });
 
-    // --- Выход ---
     document.getElementById('logoutBtn').addEventListener('click', function() {
         store.dispatch(setUser(null));
         LocalStorageService.saveUser(null);
         modal.classList.remove('open');
-        window.renderAll();
-        window.showToast('👋 Вы вышли из аккаунта');
+        globalThis.renderAll();
+        globalThis.showToast('👋 Вы вышли из аккаунта');
     });
 
-    // --- Админ-панель ---
     function renderAdminPanel() {
         const user = store.getState().user;
         if (user && user.isAdmin) {
@@ -183,7 +177,6 @@ export function Profile(store) {
         }
     }
 
-    // --- Открытие профиля ---
     function open() {
         const user = store.getState().user;
         if (!user) return;
@@ -200,7 +193,6 @@ export function Profile(store) {
         modal.classList.add('open');
     }
 
-    // Подписка на обновления (для перерисовки адресов/питомцев при изменении пользователя)
     store.subscribe((state) => {
         if (modal.classList.contains('open')) {
             const user = state.user;
