@@ -1,8 +1,8 @@
 // src/app.js
 import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
-import { 
-    setProducts, setUser, setOrders, setLang, 
+import {
+    setProducts, setUser, setOrders, setLang,
     setFilters, addToCart, removeFromCart, addOrder,
     setPage
 } from './store/actions.js';
@@ -18,7 +18,9 @@ import { AddProductModal } from './components/AddProductModal.js';
 import { Toast } from './components/Toast.js';
 import { formatPrice, getProductName } from './utils/helpers.js';
 
-// === Инициализация Store ===
+// ============================================================
+// 1. Инициализация Store (центральное состояние)
+// ============================================================
 const initialState = {
     products: [],
     cart: [],
@@ -31,37 +33,46 @@ const initialState = {
 };
 const store = createStore(initialState, rootReducer);
 
-// === Компоненты ===
+// ============================================================
+// 2. Создание экземпляров компонентов
+// ============================================================
 const toast = Toast();
 const authModal = AuthModal(store);
 const profile = Profile(store);
 const editProductModal = EditProductModal(store);
 const addProductModal = AddProductModal(store);
 
-// Глобальные ссылки (для доступа из компонентов)
-window.store = store;
-window.toast = toast;
-window.t = t;
-window.formatPrice = formatPrice;
-window.getProductName = getProductName;
-window.renderAll = renderAll;
-window.showToast = toast.show;
-window.openProductDetail = openProductDetail;
-window.openEditProductModal = editProductModal.open;
-window.openAddProductModal = addProductModal.open;
-window.openAuthModal = () => authModal.open();
-window.openProfileModal = () => profile.open();
+// ============================================================
+// 3. Глобальные ссылки (для доступа из компонентов и обработчиков)
+// ============================================================
+globalThis.store = store;
+globalThis.toast = toast;
+globalThis.t = t;
+globalThis.formatPrice = formatPrice;
+globalThis.getProductName = getProductName;
+globalThis.renderAll = renderAll;
+globalThis.showToast = toast.show;
+globalThis.openProductDetail = openProductDetail;
+globalThis.openEditProductModal = editProductModal.open;
+globalThis.openAddProductModal = addProductModal.open;
+globalThis.openAuthModal = () => authModal.open();
+globalThis.openProfileModal = () => profile.open();
 
-// === Загрузка данных ===
+// ============================================================
+// 4. Загрузка начальных данных
+// ============================================================
 async function loadInitialData() {
+    // Язык
     const savedLang = LocalStorageService.loadLang() || 'ru';
     store.dispatch(setLang(savedLang));
     setI18nLang(savedLang);
     updateLangUI(savedLang);
 
+    // Пользователь
     const user = LocalStorageService.loadUser();
     if (user) store.dispatch(setUser(user));
 
+    // Товары
     let products = LocalStorageService.loadProducts();
     if (!products || products.length === 0) {
         try {
@@ -77,9 +88,11 @@ async function loadInitialData() {
     store.dispatch(setProducts(products));
     LocalStorageService.saveProducts(products);
 
+    // Заказы
     const orders = LocalStorageService.loadOrders() || [];
     store.dispatch(setOrders(orders));
 
+    // Обновить фильтр брендов
     updateBrandFilter(products);
 }
 
@@ -105,7 +118,9 @@ function updateLangUI(lang) {
     });
 }
 
-// === Рендеринг ===
+// ============================================================
+// 5. Рендеринг
+// ============================================================
 function renderApp() {
     const productGrid = document.getElementById('productGrid');
     const paginationContainer = document.getElementById('paginationControls');
@@ -121,7 +136,7 @@ function renderApp() {
         pag.id = 'paginationControls';
     }
     renderCartModal();
-    renderUserArea(); // <-- здесь теперь навешивается обработчик
+    renderUserArea(); // обработчик навешивается внутри
     updateUITexts();
     updateCartBadge();
 }
@@ -194,24 +209,21 @@ function renderUserArea() {
                 <span class="user-name">${user.firstName || 'User'}</span>
             </div>
         `;
-        // Навешиваем обработчик на свежесозданный элемент
         const trigger = area.querySelector('.profile-trigger');
         if (trigger) {
             trigger.addEventListener('click', function(e) {
-                e.stopPropagation(); // на всякий случай
-                console.log('Profile trigger clicked');
+                e.stopPropagation();
                 profile.open();
             });
         }
     } else {
         area.innerHTML = `
-            <button class="login-trigger login-btn" data-i18n="login_btn">Войти</button>
+            <button class="login-trigger login-btn">Войти</button>
         `;
         const loginBtn = area.querySelector('.login-trigger');
         if (loginBtn) {
             loginBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                console.log('Login trigger clicked');
                 authModal.open();
             });
         }
@@ -241,21 +253,30 @@ function updateCartBadge() {
     }
 }
 
-// === Детали товара ===
+// ============================================================
+// 6. Детали товара (динамический импорт)
+// ============================================================
 function openProductDetail(productId) {
     const state = store.getState();
     const product = state.products.find(p => p.id === productId);
     if (!product) return;
     const container = document.getElementById('productDetail');
-    import('./components/ProductDetail.js').then(({ ProductDetail }) => {
-        const detail = ProductDetail(store, productId);
-        container.innerHTML = '';
-        container.appendChild(detail);
-        document.getElementById('productModal').classList.add('open');
-    });
+    import('./components/ProductDetail.js')
+        .then(({ ProductDetail }) => {
+            const detail = ProductDetail(store, productId);
+            container.innerHTML = '';
+            container.appendChild(detail);
+            document.getElementById('productModal').classList.add('open');
+        })
+        .catch(err => {
+            console.error('Ошибка загрузки ProductDetail:', err);
+            toast.show('Ошибка загрузки деталей товара');
+        });
 }
 
-// === Оформление заказа ===
+// ============================================================
+// 7. Оформление заказа
+// ============================================================
 function openCheckoutModal() {
     const state = store.getState();
     if (state.cart.length === 0) {
@@ -302,7 +323,9 @@ function calculateTotal() {
     return total;
 }
 
-// === Обработчики для фильтров и языка ===
+// ============================================================
+// 8. Инициализация обработчиков (фильтры, язык, корзина, заказ, детали)
+// ============================================================
 function initFiltersHandlers() {
     const applyBtn = document.getElementById('applyFilters');
     const searchInput = document.getElementById('searchInput');
@@ -322,8 +345,8 @@ function initFiltersHandlers() {
 
     applyBtn.addEventListener('click', updateFilters);
     searchInput.addEventListener('input', () => {
-        clearTimeout(window._searchTimeout);
-        window._searchTimeout = setTimeout(updateFilters, 300);
+        clearTimeout(globalThis._searchTimeout);
+        globalThis._searchTimeout = setTimeout(updateFilters, 300);
     });
     filterPet.addEventListener('change', updateFilters);
     filterBrand.addEventListener('change', updateFilters);
@@ -420,7 +443,9 @@ function initProductModalHandlers() {
     });
 }
 
-// === Общая функция обновления ===
+// ============================================================
+// 9. Общая функция обновления всего интерфейса
+// ============================================================
 function renderAll() {
     renderApp();
     renderCartModal();
@@ -428,16 +453,19 @@ function renderAll() {
     updateCartBadge();
 }
 
-// === Подписка на изменения Store ===
+// ============================================================
+// 10. Подписка на изменения Store
+// ============================================================
 store.subscribe((state) => {
     if (document.getElementById('cartModal').classList.contains('open')) {
         renderCartModal();
     }
     updateCartBadge();
-    // Если профиль открыт, можно обновить его содержимое, но это уже сделает сам Profile
 });
 
-// === Инициализация ===
+// ============================================================
+// 11. Старт приложения
+// ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     await loadInitialData();
     renderAll();
@@ -447,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCheckoutHandlers();
     initProductModalHandlers();
 
-    // Экспорт JSON (из админки)
+    // --- Административные функции ---
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
         const products = store.getState().products;
         if (!products.length) {
@@ -465,11 +493,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast.show('📥 JSON скачан!');
     });
 
-    // Загрузка JSON
     document.getElementById('loadJsonBtn').addEventListener('click', async function() {
         const status = document.getElementById('loadJsonStatus');
         try {
-            const baseUrl = window.location.pathname.replace(/\/[^/]*$/, '/');
+            const baseUrl = globalThis.location.pathname.replace(/\/[^/]*$/, '/');
             const resp = await fetch(baseUrl + 'products.json');
             if (!resp.ok) throw new Error('Файл не найден');
             const data = await resp.json();
@@ -486,7 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // GitHub токен
+    // GitHub
     const tokenInput = document.getElementById('githubTokenInput');
     const saveTokenBtn = document.getElementById('saveGitHubTokenBtn');
     const syncBtn = document.getElementById('syncToGitHubBtn');
