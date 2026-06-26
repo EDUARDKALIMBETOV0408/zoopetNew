@@ -10,14 +10,12 @@ export function AddProductModal(store) {
     const cancelBtn = document.getElementById('addProductCancelBtn');
     const statusEl = document.getElementById('addProductStatus');
 
-    // Закрытие
     closeBtn.addEventListener('click', () => modal.classList.remove('open'));
     cancelBtn.addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // Отправка
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const brand = document.getElementById('addBrand').value.trim();
@@ -63,7 +61,6 @@ export function AddProductModal(store) {
         window.renderAll();
         window.showToast('✅ Товар добавлен!');
 
-        // Синхронизация с GitHub
         const token = GitHubService.getToken();
         if (token) {
             GitHubService.syncProducts(store.getState().products)
