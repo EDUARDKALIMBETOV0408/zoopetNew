@@ -130,7 +130,7 @@ function renderApp() {
         pag.id = 'paginationControls';
     }
     renderCartModal();
-    renderUserArea(); // обработчик навешивается внутри
+    renderUserArea(); // обновляет HTML, но обработчик висит на #userArea
     updateUITexts();
     updateCartBadge();
 }
@@ -193,7 +193,10 @@ function renderCartModal() {
 
 function renderUserArea() {
     const area = document.getElementById('userArea');
-    if (!area) return;
+    if (!area) {
+        console.error('userArea not found!');
+        return;
+    }
     const user = store.getState().user;
     if (user) {
         const initial = (user.firstName || 'U')[0].toUpperCase();
@@ -203,28 +206,10 @@ function renderUserArea() {
                 <span class="user-name">${user.firstName || 'User'}</span>
             </div>
         `;
-        const trigger = area.querySelector('.profile-trigger');
-        if (trigger) {
-            trigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                console.log('Profile trigger clicked');
-                profile.open();
-            });
-        } else {
-            console.warn('Profile trigger not found');
-        }
     } else {
         area.innerHTML = `
             <button class="login-trigger login-btn">Войти</button>
         `;
-        const loginBtn = area.querySelector('.login-trigger');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                console.log('Login trigger clicked');
-                authModal.open();
-            });
-        }
     }
 }
 
@@ -322,7 +307,7 @@ function calculateTotal() {
 }
 
 // ============================================================
-// 8. Инициализация обработчиков
+// 8. Инициализация обработчиков (фильтры, язык, корзина, заказ, детали)
 // ============================================================
 function initFiltersHandlers() {
     const applyBtn = document.getElementById('applyFilters');
@@ -442,7 +427,52 @@ function initProductModalHandlers() {
 }
 
 // ============================================================
-// 9. Общая функция обновления
+// 9. Инициализация делегированных обработчиков для пользовательской зоны (ГЛАВНОЕ)
+// ============================================================
+function initUserAreaDelegation() {
+    const userArea = document.getElementById('userArea');
+    if (!userArea) {
+        console.error('CRITICAL: userArea not found!');
+        return;
+    }
+    // Удаляем старые обработчики, если они есть (на всякий случай)
+    userArea.removeEventListener('click', userArea._clickHandler);
+    // Создаём новый обработчик
+    const handler = function(e) {
+        // Проверяем клик по профилю
+        const profileTrigger = e.target.closest('.profile-trigger');
+        if (profileTrigger) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Profile trigger clicked (delegated)');
+            // Проверяем, что profile.open существует
+            if (typeof profile.open === 'function') {
+                profile.open();
+            } else {
+                console.error('profile.open is not a function');
+            }
+            return;
+        }
+        // Проверяем клик по кнопке входа
+        const loginTrigger = e.target.closest('.login-trigger');
+        if (loginTrigger) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Login trigger clicked (delegated)');
+            if (typeof authModal.open === 'function') {
+                authModal.open();
+            } else {
+                console.error('authModal.open is not a function');
+            }
+        }
+    };
+    userArea.addEventListener('click', handler);
+    userArea._clickHandler = handler; // сохраняем ссылку для возможного удаления
+    console.log('User area delegation initialized');
+}
+
+// ============================================================
+// 10. Общая функция обновления
 // ============================================================
 function renderAll() {
     renderApp();
@@ -452,7 +482,7 @@ function renderAll() {
 }
 
 // ============================================================
-// 10. Подписка на изменения Store
+// 11. Подписка на изменения Store
 // ============================================================
 store.subscribe((_state) => {
     if (document.getElementById('cartModal').classList.contains('open')) {
@@ -462,7 +492,7 @@ store.subscribe((_state) => {
 });
 
 // ============================================================
-// 11. Старт приложения
+// 12. Старт приложения
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     await loadInitialData();
@@ -472,6 +502,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
+    initUserAreaDelegation(); // ВАЖНО: вызываем после рендеринга
 
     // --- Административные функции ---
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
