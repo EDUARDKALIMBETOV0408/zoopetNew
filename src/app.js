@@ -3,8 +3,8 @@ import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
 import {
     setProducts, setUser, setOrders, setLang,
-    setFilters, addToCart, removeFromCart, addOrder,
-    setPage
+    setFilters, addToCart, removeFromCart, addOrder
+    // setPage не используется напрямую — удалён
 } from './store/actions.js';
 import { LocalStorageService } from './services/localStorageService.js';
 import { GitHubService } from './services/githubService.js';
@@ -19,7 +19,7 @@ import { Toast } from './components/Toast.js';
 import { formatPrice, getProductName } from './utils/helpers.js';
 
 // ============================================================
-// 1. Инициализация Store (центральное состояние)
+// 1. Инициализация Store
 // ============================================================
 const initialState = {
     products: [],
@@ -43,7 +43,7 @@ const editProductModal = EditProductModal(store);
 const addProductModal = AddProductModal(store);
 
 // ============================================================
-// 3. Глобальные ссылки (для доступа из компонентов и обработчиков)
+// 3. Глобальные ссылки (через globalThis)
 // ============================================================
 globalThis.store = store;
 globalThis.toast = toast;
@@ -62,17 +62,14 @@ globalThis.openProfileModal = () => profile.open();
 // 4. Загрузка начальных данных
 // ============================================================
 async function loadInitialData() {
-    // Язык
     const savedLang = LocalStorageService.loadLang() || 'ru';
     store.dispatch(setLang(savedLang));
     setI18nLang(savedLang);
     updateLangUI(savedLang);
 
-    // Пользователь
     const user = LocalStorageService.loadUser();
     if (user) store.dispatch(setUser(user));
 
-    // Товары
     let products = LocalStorageService.loadProducts();
     if (!products || products.length === 0) {
         try {
@@ -81,18 +78,16 @@ async function loadInitialData() {
                 products = await resp.json();
                 if (!Array.isArray(products)) products = [];
             }
-        } catch (e) {
+        } catch (_) {
             products = [];
         }
     }
     store.dispatch(setProducts(products));
     LocalStorageService.saveProducts(products);
 
-    // Заказы
     const orders = LocalStorageService.loadOrders() || [];
     store.dispatch(setOrders(orders));
 
-    // Обновить фильтр брендов
     updateBrandFilter(products);
 }
 
@@ -136,7 +131,7 @@ function renderApp() {
         pag.id = 'paginationControls';
     }
     renderCartModal();
-    renderUserArea(); // обработчик навешивается внутри
+    renderUserArea();
     updateUITexts();
     updateCartBadge();
 }
@@ -324,7 +319,7 @@ function calculateTotal() {
 }
 
 // ============================================================
-// 8. Инициализация обработчиков (фильтры, язык, корзина, заказ, детали)
+// 8. Инициализация обработчиков
 // ============================================================
 function initFiltersHandlers() {
     const applyBtn = document.getElementById('applyFilters');
@@ -444,7 +439,7 @@ function initProductModalHandlers() {
 }
 
 // ============================================================
-// 9. Общая функция обновления всего интерфейса
+// 9. Общая функция обновления
 // ============================================================
 function renderAll() {
     renderApp();
@@ -456,7 +451,7 @@ function renderAll() {
 // ============================================================
 // 10. Подписка на изменения Store
 // ============================================================
-store.subscribe((state) => {
+store.subscribe((_state) => {
     if (document.getElementById('cartModal').classList.contains('open')) {
         renderCartModal();
     }
