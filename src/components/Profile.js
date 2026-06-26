@@ -35,14 +35,12 @@ export function Profile(store) {
     function updateVisibility(user) {
         if (!user) return;
         if (user.isAdmin) {
-            // Скрываем личные данные для админа
             if (nameFieldsGroup) nameFieldsGroup.style.display = 'none';
             if (phoneFieldGroup) phoneFieldGroup.style.display = 'none';
             if (emailFieldGroup) emailFieldGroup.style.display = 'none';
             if (addressesSection) addressesSection.style.display = 'none';
             if (petsSection) petsSection.style.display = 'none';
         } else {
-            // Показываем для обычного пользователя
             if (nameFieldsGroup) nameFieldsGroup.style.display = 'block';
             if (phoneFieldGroup) phoneFieldGroup.style.display = 'block';
             if (emailFieldGroup) emailFieldGroup.style.display = 'block';
@@ -54,7 +52,7 @@ export function Profile(store) {
     // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
-        if (!user || user.isAdmin) return; // Админу адреса не показываем
+        if (!user || user.isAdmin) return;
         profileAddresses.innerHTML = '';
         if (!user.addresses) user.addresses = [];
         user.addresses.forEach((addr, index) => {
@@ -113,7 +111,7 @@ export function Profile(store) {
     // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
-        if (!user || user.isAdmin) return; // Админу питомцев не показываем
+        if (!user || user.isAdmin) return;
         profilePets.innerHTML = '';
         if (!user.pets) user.pets = [];
         user.pets.forEach((pet, index) => {
@@ -170,7 +168,6 @@ export function Profile(store) {
         e.preventDefault();
         const user = store.getState().user;
         if (!user) return;
-        // Если админ, не сохраняем личные данные
         if (user.isAdmin) {
             globalThis.showToast('Администратору не нужно изменять эти данные');
             return;
@@ -223,21 +220,17 @@ export function Profile(store) {
             return;
         }
 
-        // Заполняем поля (если они видны)
         profFirstName.value = user.firstName || '';
         profLastName.value = user.lastName || '';
         profPhone.value = user.phone || '';
         profEmail.value = user.email || '';
 
-        // Управляем видимостью блоков в зависимости от роли
         updateVisibility(user);
 
-        // Рендерим адреса и питомцев (только если не админ)
         if (!user.isAdmin) {
             renderAddresses();
             renderPets();
         } else {
-            // Очищаем контейнеры, чтобы не осталось старых данных
             profileAddresses.innerHTML = '';
             profilePets.innerHTML = '';
         }
@@ -250,12 +243,45 @@ export function Profile(store) {
         console.log('✅ Профиль открыт');
     }
 
-    // Подписка на изменения (для перерисовки, если профиль открыт)
+    // --- Обновление UI при смене языка (новый метод) ---
+    function updateUI() {
+        const user = store.getState().user;
+        if (!user || !modal.classList.contains('open')) return;
+
+        // Обновляем заголовки и кнопки с data-i18n внутри модалки
+        const elements = modal.querySelectorAll('[data-i18n]');
+        elements.forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.textContent = t(key);
+        });
+        // Обновляем placeholder'ы
+        const placeholders = modal.querySelectorAll('[data-i18n-placeholder]');
+        placeholders.forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            el.placeholder = t(key);
+        });
+
+        // Перерисовываем адреса и питомцев, если они видны
+        if (!user.isAdmin) {
+            renderAddresses();
+            renderPets();
+        }
+        // Обновляем статус (если есть)
+        if (profileStatus.textContent) {
+            // если статус содержит переводимую строку, можно обновить
+        }
+        // Обновляем админ-панель (она тоже может иметь переводы)
+        if (adminPanelComponent) {
+            adminPanelComponent.update();
+        }
+        console.log('🔄 Profile UI updated after language change');
+    }
+
+    // Подписка на изменения store
     store.subscribe((state) => {
         if (modal.classList.contains('open')) {
             const user = state.user;
             if (user) {
-                // Обновляем видимость при смене роли (если вдруг)
                 updateVisibility(user);
                 if (!user.isAdmin) {
                     renderAddresses();
@@ -269,5 +295,5 @@ export function Profile(store) {
         }
     });
 
-    return { open, modal };
+    return { open, modal, updateUI };
 }
