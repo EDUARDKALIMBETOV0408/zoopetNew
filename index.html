@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <style>
-        /* === Все стили (полностью скопированы из исходника) === */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --bg-primary: #F7F5F0;
@@ -60,7 +59,7 @@
         .lang-btn { border: none; background: transparent; padding: 6px 16px; border-radius: 30px; font-weight: 500; font-size: 13px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; font-family: var(--font); text-transform: uppercase; }
         .lang-btn.active { background: var(--bg-white); color: var(--accent-green); box-shadow: 0 2px 8px rgba(74,124,89,0.15); }
         .lang-btn:hover { color: var(--text-primary); }
-        .user-area { display: flex; align-items: center; gap: 12px; cursor: pointer; flex-shrink: 0; }
+        .user-area { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .user-area .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; text-transform: uppercase; }
         .user-area .user-name { font-weight: 500; font-size: 14px; white-space: nowrap; }
         .user-area .login-btn { background: none; border: 1px solid var(--accent-green); border-radius: 30px; padding: 6px 18px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--accent-green); transition: 0.2s; font-family: var(--font); white-space: nowrap; }
@@ -189,6 +188,7 @@
     </style>
 </head>
 <body>
+
     <div class="app-container" id="app">
         <div id="toast" class="toast">✅ Успешно!</div>
         <header class="header">
@@ -246,8 +246,7 @@
         <div id="paginationControls" class="pagination-controls"></div>
     </div>
 
-    <!-- Модальные окна (разметка остаётся, но управляется через JS) -->
-    <!-- Корзина -->
+    <!-- Модальные окна -->
     <div class="modal-overlay" id="cartModal">
         <div class="modal">
             <button class="modal-close" id="cartCloseBtn">&times;</button>
@@ -261,7 +260,6 @@
         </div>
     </div>
 
-    <!-- Авторизация -->
     <div class="modal-overlay" id="authModal">
         <div class="modal">
             <button class="modal-close" id="authCloseBtn">&times;</button>
@@ -293,7 +291,6 @@
         </div>
     </div>
 
-    <!-- Профиль -->
     <div class="modal-overlay" id="profileModal">
         <div class="modal">
             <button class="modal-close" id="profileCloseBtn">&times;</button>
@@ -344,7 +341,6 @@
                     <button type="button" class="btn btn-outline" id="showPetFormBtn" style="margin-top:8px;" data-i18n="add_pet">+ Добавить питомца</button>
                 </div>
 
-                <!-- АДМИН-ПАНЕЛЬ -->
                 <div id="adminPanel" style="display:none;" class="admin-section">
                     <h4>🔧 Администрирование</h4>
                     <div class="admin-tabs">
@@ -387,7 +383,6 @@
         </div>
     </div>
 
-    <!-- Оформление заказа -->
     <div class="modal-overlay" id="checkoutModal">
         <div class="modal">
             <button class="modal-close" id="checkoutCloseBtn">&times;</button>
@@ -417,7 +412,6 @@
         </div>
     </div>
 
-    <!-- Карточка товара -->
     <div class="modal-overlay" id="productModal">
         <div class="modal">
             <button class="modal-close" id="productCloseBtn">&times;</button>
@@ -425,7 +419,6 @@
         </div>
     </div>
 
-    <!-- Редактирование товара -->
     <div class="modal-overlay" id="editProductModal">
         <div class="modal">
             <button class="modal-close" id="editProductCloseBtn">&times;</button>
@@ -445,7 +438,6 @@
         </div>
     </div>
 
-    <!-- Добавление товара (модальное окно) -->
     <div class="modal-overlay" id="addProductModal">
         <div class="modal">
             <button class="modal-close" id="addProductCloseBtn">&times;</button>
@@ -474,7 +466,6 @@
         </div>
     </div>
 
-    <!-- Подключение основного модуля -->
     <script type="module" src="src/app.js"></script>
 </body>
 </html>
