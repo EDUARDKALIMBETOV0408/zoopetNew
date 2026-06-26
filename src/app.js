@@ -331,6 +331,12 @@ function initLangHandlers() {
             LocalStorageService.saveLang(lang);
             updateLangUI(lang);
             renderAll();
+            
+            // Обновляем интерфейс профиля, если он открыт
+            if (profile.modal.classList.contains('open')) {
+                profile.updateUI();
+            }
+            
             toast.show(`🌐 ${lang.toUpperCase()}`);
         });
     });
