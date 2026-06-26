@@ -7,13 +7,11 @@ export function EditProductModal(store) {
     const form = document.getElementById('editProductForm');
     const closeBtn = document.getElementById('editProductCloseBtn');
 
-    // Закрытие
     closeBtn.addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // Отправка формы
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         const id = parseInt(document.getElementById('editProductId').value);
@@ -41,7 +39,6 @@ export function EditProductModal(store) {
         window.showToast('✅ Товар обновлён!');
     });
 
-    // Функция открытия с заполнением данных
     function open(productId) {
         const product = store.getState().products.find(p => p.id === productId);
         if (!product) return;
