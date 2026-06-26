@@ -6,9 +6,6 @@ import { setUser } from '../store/actions.js';
 
 export function AuthModal(store) {
     const modal = document.getElementById('authModal');
-    const container = modal.querySelector('.modal'); // содержимое уже есть, мы управляем логикой
-
-    // Элементы
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const loginStatus = document.getElementById('loginStatus');
@@ -100,11 +97,9 @@ export function AuthModal(store) {
         window.showToast(t('toast_success'));
     });
 
-    // Открытие модалки (вызывается из app.js)
     function open() {
         loginStatus.textContent = '';
         registerStatus.textContent = '';
-        // Сброс табов на логин
         tabs.forEach(b => b.classList.remove('active'));
         document.querySelector('[data-tab="login"]').classList.add('active');
         tabContents.forEach(t => t.classList.remove('active'));
