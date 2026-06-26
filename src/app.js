@@ -10,7 +10,6 @@ import { LocalStorageService } from './services/localStorageService.js';
 import { GitHubService } from './services/githubService.js';
 import { setLang as setI18nLang, t } from './services/i18n.js';
 import { ProductList } from './components/ProductList.js';
-import { Cart } from './components/Cart.js';
 import { Pagination } from './components/Pagination.js';
 import { AuthModal } from './components/AuthModal.js';
 import { Profile } from './components/Profile.js';
@@ -39,14 +38,13 @@ const profile = Profile(store);
 const editProductModal = EditProductModal(store);
 const addProductModal = AddProductModal(store);
 
-// Делаем глобальные ссылки для компонентов и утилит
+// Глобальные ссылки (для доступа из компонентов)
 window.store = store;
 window.toast = toast;
 window.t = t;
 window.formatPrice = formatPrice;
 window.getProductName = getProductName;
 window.renderAll = renderAll;
-window.renderUserArea = renderUserArea;
 window.showToast = toast.show;
 window.openProductDetail = openProductDetail;
 window.openEditProductModal = editProductModal.open;
@@ -111,7 +109,6 @@ function updateLangUI(lang) {
 function renderApp() {
     const productGrid = document.getElementById('productGrid');
     const paginationContainer = document.getElementById('paginationControls');
-    const filtersContainer = document.getElementById('filtersContainer');
 
     if (productGrid) {
         const list = ProductList(store);
@@ -123,7 +120,6 @@ function renderApp() {
         paginationContainer.parentNode.replaceChild(pag, paginationContainer);
         pag.id = 'paginationControls';
     }
-    // Фильтры уже есть в разметке, обработчики навешиваются в app.js (ниже)
     renderCartModal();
     renderUserArea();
     updateUITexts();
@@ -198,12 +194,10 @@ function renderUserArea() {
                 <span class="user-name">${user.firstName || 'User'}</span>
             </div>
         `;
-        document.getElementById('profileBtn').addEventListener('click', () => profile.open());
     } else {
         area.innerHTML = `
             <button class="login-btn" id="loginBtn" data-i18n="login_btn">Войти</button>
         `;
-        document.getElementById('loginBtn').addEventListener('click', () => authModal.open());
     }
 }
 
@@ -236,7 +230,6 @@ function openProductDetail(productId) {
     const product = state.products.find(p => p.id === productId);
     if (!product) return;
     const container = document.getElementById('productDetail');
-    // Используем импорт ProductDetail (уже есть)
     import('./components/ProductDetail.js').then(({ ProductDetail }) => {
         const detail = ProductDetail(store, productId);
         container.innerHTML = '';
@@ -410,6 +403,25 @@ function initProductModalHandlers() {
     });
 }
 
+// === Инициализация делегированных обработчиков для пользовательской зоны ===
+function initUserAreaHandlers() {
+    const userArea = document.getElementById('userArea');
+    if (!userArea) return;
+    userArea.addEventListener('click', function(e) {
+        // Клик по кнопке профиля
+        const profileBtn = e.target.closest('#profileBtn');
+        if (profileBtn) {
+            profile.open();
+            return;
+        }
+        // Клик по кнопке входа
+        const loginBtn = e.target.closest('#loginBtn');
+        if (loginBtn) {
+            authModal.open();
+        }
+    });
+}
+
 // === Общая функция обновления ===
 function renderAll() {
     renderApp();
@@ -435,6 +447,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
+    initUserAreaHandlers();   // <-- Один раз навешиваем делегирование
 
     // Экспорт JSON (из админки)
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
@@ -520,5 +533,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateTokenStatusUI();
 
-    console.log('🐾 ZooPet (рефакторинг с компонентами) загружен!');
+    console.log('🐾 ZooPet (рефакторинг с делегированием) загружен!');
 });
