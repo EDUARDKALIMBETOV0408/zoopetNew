@@ -1,6 +1,6 @@
 // src/components/Pagination.js
 import { setPage } from '../store/actions.js';
-import { t } from '../services/i18n.js';
+// t не используется, поэтому импорт удалён
 
 export function Pagination(store) {
     const container = document.createElement('div');
@@ -9,7 +9,7 @@ export function Pagination(store) {
     const render = () => {
         const state = store.getState();
         const { products, filters, page, itemsPerPage } = state;
-        let filtered = products.filter(p => {
+        const filtered = products.filter(p => {
             if (filters.pet && p.category !== filters.pet) return false;
             if (filters.brand && p.brand !== filters.brand) return false;
             if (p.price_rsd > filters.priceMax) return false;
@@ -37,19 +37,19 @@ export function Pagination(store) {
         document.getElementById('prevPageBtn')?.addEventListener('click', () => {
             if (page > 1) {
                 store.dispatch(setPage(page - 1));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                globalThis.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
         document.getElementById('nextPageBtn')?.addEventListener('click', () => {
             if (page < totalPages) {
                 store.dispatch(setPage(page + 1));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                globalThis.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
         document.getElementById('loadMoreBtn')?.addEventListener('click', () => {
             if (page < totalPages) {
                 store.dispatch(setPage(page + 1));
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                globalThis.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
     };
