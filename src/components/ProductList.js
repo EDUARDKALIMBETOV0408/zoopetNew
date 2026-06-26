@@ -10,7 +10,6 @@ export function ProductList(store) {
     const render = () => {
         const state = store.getState();
         const { products, filters, page, itemsPerPage, lang } = state;
-        // Фильтрация
         let filtered = products.filter(p => {
             if (filters.pet && p.category !== filters.pet) return false;
             if (filters.brand && p.brand !== filters.brand) return false;
@@ -21,7 +20,6 @@ export function ProductList(store) {
             }
             return true;
         });
-        // Сортировка
         if (filters.sort === 'price_asc') filtered.sort((a, b) => a.price_rsd - b.price_rsd);
         else if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_rsd - a.price_rsd);
 
@@ -51,7 +49,6 @@ export function ProductList(store) {
         });
         container.innerHTML = html;
 
-        // События
         container.querySelectorAll('.add-to-cart').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
