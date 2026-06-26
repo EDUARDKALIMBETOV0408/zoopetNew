@@ -1,6 +1,7 @@
 // src/i18n/translations.js
 export default {
     ru: {
+        // Шапка и баннер
         banner_title: '🐶 Специальное предложение!',
         banner_desc: 'Скидка 20% на первый заказ для новых клиентов. Бесплатная доставка по Белграду.',
         cart_title: '🛒 Корзина',
@@ -20,6 +21,8 @@ export default {
         no_products: 'Нет товаров, соответствующих фильтрам',
         cart_empty: 'Корзина пуста',
         checkout_btn: 'Оформить заказ',
+
+        // Авторизация
         auth_title: '🔐 Вход / Регистрация',
         login_tab: 'Вход',
         register_tab: 'Регистрация',
@@ -31,6 +34,12 @@ export default {
         first_name: 'Имя',
         last_name: 'Фамилия',
         phone: 'Телефон (сербский формат)',
+        login_failed: '⚠️ Неверный email или пароль',
+        consent_required: '⚠️ Необходимо согласие на обработку ПДн',
+        phone_invalid: '⚠️ Введите корректный сербский номер (+381 63 123 4567)',
+        reg_success: '✅ Регистрация успешна! Теперь войдите.',
+
+        // Профиль
         profile_title: '👤 Личный кабинет',
         addresses_title: '📍 Адреса',
         pets_title: '🐕 Питомцы',
@@ -45,6 +54,13 @@ export default {
         pet_birthday: 'Дата рождения',
         save: 'Сохранить',
         cancel: 'Отмена',
+        address_primary: 'Основной',
+        address_secondary: 'Дополнительный',
+        logout: 'Выйти из аккаунта',
+        toast_profile_saved: '✅ Данные сохранены!',
+
+        // Оформление заказа
+        checkout_title: '🚚 Оформление заказа',
         delivery_method: 'Способ доставки',
         delivery_courier: 'Курьер',
         delivery_pickup: 'Самовывоз',
@@ -52,23 +68,16 @@ export default {
         payment_card: 'Банковская карта',
         payment_cash: 'Наличные при получении',
         confirm_order: 'Подтвердить заказ',
+        no_addresses: 'Нет сохранённых адресов. Добавьте в профиле.',
+        toast_order: '🎉 Заказ оформлен! Спасибо!',
+
+        // Уведомления
         toast_success: '✅ Регистрация успешна!',
         toast_login: '✅ Добро пожаловать!',
-        toast_order: '🎉 Заказ оформлен! Спасибо!',
-        toast_profile_saved: '✅ Данные сохранены!',
-        address_primary: 'Основной',
-        address_secondary: 'Дополнительный',
-        phone_invalid: '⚠️ Введите корректный сербский номер (+381 63 123 4567)',
-        consent_required: '⚠️ Необходимо согласие на обработку ПДн',
-        login_failed: '⚠️ Неверный email или пароль',
-        reg_success: '✅ Регистрация успешна! Теперь войдите.',
-        no_addresses: 'Нет сохранённых адресов. Добавьте в профиле.',
-        weight: 'Вес',
-        food_type: 'Тип корма',
-        age: 'Возраст',
         toast_added: '✅ Товар добавлен в корзину!',
         toast_removed: '🗑️ Товар удалён из корзины',
-        logout: 'Выйти из аккаунта',
+
+        // Админ-панель и товары
         add_product_title: '➕ Добавление товара',
         brand: 'Бренд',
         category: 'Категория (dog/cat)',
@@ -87,7 +96,13 @@ export default {
         add_product_save: 'Добавить товар',
         open_add_form: 'Открыть форму добавления',
         export_json: '📥 Скачать JSON',
+
+        // Дополнительные атрибуты
+        weight: 'Вес',
+        food_type: 'Тип корма',
+        age: 'Возраст',
     },
+
     sr: {
         banner_title: '🐶 Посебна понуда!',
         banner_desc: 'Попуст 20% на прву поруџбину за нове купце. Бесплатна достава у Београду.',
@@ -108,6 +123,7 @@ export default {
         no_products: 'Нема производа који одговарају филтерима',
         cart_empty: 'Корпа је празна',
         checkout_btn: 'Наручи',
+
         auth_title: '🔐 Пријава / Регистрација',
         login_tab: 'Пријава',
         register_tab: 'Регистрација',
@@ -119,6 +135,11 @@ export default {
         first_name: 'Име',
         last_name: 'Презиме',
         phone: 'Телефон (српски формат)',
+        login_failed: '⚠️ Погрешан email или лозинка',
+        consent_required: '⚠️ Потребна сагласност за обраду ПДн',
+        phone_invalid: '⚠️ Унесите исправан српски број (+381 63 123 4567)',
+        reg_success: '✅ Регистрација успешна! Сада се пријавите.',
+
         profile_title: '👤 Лични налог',
         addresses_title: '📍 Адресе',
         pets_title: '🐕 Љубимци',
@@ -133,6 +154,12 @@ export default {
         pet_birthday: 'Датум рођења',
         save: 'Сачувај',
         cancel: 'Откажи',
+        address_primary: 'Главна',
+        address_secondary: 'Додатна',
+        logout: 'Одјави се',
+        toast_profile_saved: '✅ Подаци сачувани!',
+
+        checkout_title: '🚚 Обрада наруџбине',
         delivery_method: 'Начин доставе',
         delivery_courier: 'Курир',
         delivery_pickup: 'Лично преузимање',
@@ -140,23 +167,14 @@ export default {
         payment_card: 'Банковна картица',
         payment_cash: 'Готовина приликом преузимања',
         confirm_order: 'Потврди наруџбину',
+        no_addresses: 'Нема сачуваних адреса. Додајте у профилу.',
+        toast_order: '🎉 Наруџбина прихваћена! Хвала!',
+
         toast_success: '✅ Регистрација успешна!',
         toast_login: '✅ Добродошли!',
-        toast_order: '🎉 Наруџбина прихваћена! Хвала!',
-        toast_profile_saved: '✅ Подаци сачувани!',
-        address_primary: 'Главна',
-        address_secondary: 'Додатна',
-        phone_invalid: '⚠️ Унесите исправан српски број (+381 63 123 4567)',
-        consent_required: '⚠️ Потребна сагласност за обраду ПДн',
-        login_failed: '⚠️ Погрешан email или лозинка',
-        reg_success: '✅ Регистрација успешна! Сада се пријавите.',
-        no_addresses: 'Нема сачуваних адреса. Додајте у профилу.',
-        weight: 'Тежина',
-        food_type: 'Врста хране',
-        age: 'Узраст',
         toast_added: '✅ Додато у корпу!',
         toast_removed: '🗑️ Уклоњено из корпе',
-        logout: 'Одјави се',
+
         add_product_title: '➕ Додавање производа',
         brand: 'Бренд',
         category: 'Категорија (dog/cat)',
@@ -175,7 +193,12 @@ export default {
         add_product_save: 'Додај производ',
         open_add_form: 'Отвори форму за додавање',
         export_json: '📥 Преузми JSON',
+
+        weight: 'Тежина',
+        food_type: 'Врста хране',
+        age: 'Узраст',
     },
+
     en: {
         banner_title: '🐶 Special Offer!',
         banner_desc: '20% off your first order for new customers. Free delivery in Belgrade.',
@@ -196,6 +219,7 @@ export default {
         no_products: 'No products matching filters',
         cart_empty: 'Cart is empty',
         checkout_btn: 'Checkout',
+
         auth_title: '🔐 Login / Register',
         login_tab: 'Login',
         register_tab: 'Register',
@@ -207,6 +231,11 @@ export default {
         first_name: 'First name',
         last_name: 'Last name',
         phone: 'Phone (Serbian format)',
+        login_failed: '⚠️ Invalid email or password',
+        consent_required: '⚠️ Consent required',
+        phone_invalid: '⚠️ Please enter a valid Serbian number',
+        reg_success: '✅ Registration successful! Please login.',
+
         profile_title: '👤 Profile',
         addresses_title: '📍 Addresses',
         pets_title: '🐕 Pets',
@@ -221,6 +250,12 @@ export default {
         pet_birthday: 'Birthday',
         save: 'Save',
         cancel: 'Cancel',
+        address_primary: 'Primary',
+        address_secondary: 'Additional',
+        logout: 'Log out',
+        toast_profile_saved: '✅ Profile saved!',
+
+        checkout_title: '🚚 Checkout',
         delivery_method: 'Delivery method',
         delivery_courier: 'Courier',
         delivery_pickup: 'Pickup',
@@ -228,23 +263,14 @@ export default {
         payment_card: 'Card',
         payment_cash: 'Cash on delivery',
         confirm_order: 'Confirm order',
+        no_addresses: 'No saved addresses. Add in profile.',
+        toast_order: '🎉 Order placed! Thank you!',
+
         toast_success: '✅ Registration successful!',
         toast_login: '✅ Welcome!',
-        toast_order: '🎉 Order placed! Thank you!',
-        toast_profile_saved: '✅ Profile saved!',
-        address_primary: 'Primary',
-        address_secondary: 'Additional',
-        phone_invalid: '⚠️ Please enter a valid Serbian number',
-        consent_required: '⚠️ Consent required',
-        login_failed: '⚠️ Invalid email or password',
-        reg_success: '✅ Registration successful! Please login.',
-        no_addresses: 'No saved addresses. Add in profile.',
-        weight: 'Weight',
-        food_type: 'Food type',
-        age: 'Age',
         toast_added: '✅ Added to cart!',
         toast_removed: '🗑️ Removed from cart',
-        logout: 'Log out',
+
         add_product_title: '➕ Add Product',
         brand: 'Brand',
         category: 'Category (dog/cat)',
@@ -263,5 +289,9 @@ export default {
         add_product_save: 'Add product',
         open_add_form: 'Open add form',
         export_json: '📥 Download JSON',
+
+        weight: 'Weight',
+        food_type: 'Food type',
+        age: 'Age',
     }
 };
