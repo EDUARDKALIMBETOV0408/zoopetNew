@@ -14,7 +14,6 @@ export function AuthModal(store) {
     const tabContents = document.querySelectorAll('#authModal .tab-content');
     const closeBtn = document.getElementById('authCloseBtn');
 
-    // Переключение табов
     tabs.forEach(btn => {
         btn.addEventListener('click', function() {
             const tab = this.dataset.tab;
@@ -27,26 +26,23 @@ export function AuthModal(store) {
         });
     });
 
-    // Закрытие
     closeBtn.addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('open');
     });
 
-    // Логин
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
 
-        // Временный админ
         if (email === 'admin@admin.com' && password === 'admin123') {
             const user = { id: 999, email, firstName: 'Admin', lastName: '', phone: '', addresses: [], pets: [], isAdmin: true };
             store.dispatch(setUser(user));
             LocalStorageService.saveUser(user);
             modal.classList.remove('open');
-            window.renderAll();
-            window.showToast('🔧 Добро пожаловать, администратор!');
+            globalThis.renderAll();
+            globalThis.showToast('🔧 Добро пожаловать, администратор!');
             return;
         }
 
@@ -54,14 +50,13 @@ export function AuthModal(store) {
         if (saved && saved.email === email && saved.password === password) {
             store.dispatch(setUser(saved));
             modal.classList.remove('open');
-            window.renderAll();
-            window.showToast(t('toast_login'));
+            globalThis.renderAll();
+            globalThis.showToast(t('toast_login'));
             return;
         }
         loginStatus.textContent = t('login_failed');
     });
 
-    // Регистрация
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const email = document.getElementById('regEmail').value.trim();
@@ -93,8 +88,8 @@ export function AuthModal(store) {
         LocalStorageService.saveUser(newUser);
         store.dispatch(setUser(newUser));
         modal.classList.remove('open');
-        window.renderAll();
-        window.showToast(t('toast_success'));
+        globalThis.renderAll();
+        globalThis.showToast(t('toast_success'));
     });
 
     function open() {
