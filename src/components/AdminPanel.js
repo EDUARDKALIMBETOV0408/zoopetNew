@@ -14,7 +14,7 @@ export function AdminPanel(store) {
         const orders = state.orders;
         const lang = state.lang;
 
-        // Вкладки уже есть в разметке, мы лишь обновляем списки
+        // Обновляем список товаров
         const productsList = document.getElementById('adminProductsList');
         if (productsList) {
             let html = '<h5>Список товаров</h5>';
@@ -36,6 +36,7 @@ export function AdminPanel(store) {
             });
         }
 
+        // Обновляем список заказов
         const ordersList = document.getElementById('adminOrdersList');
         if (ordersList) {
             if (orders.length === 0) {
