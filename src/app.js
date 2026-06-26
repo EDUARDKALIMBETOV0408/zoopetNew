@@ -183,10 +183,7 @@ function renderCartModal() {
 
 function renderUserArea() {
     const area = document.getElementById('userArea');
-    if (!area) {
-        console.error('userArea not found!');
-        return;
-    }
+    if (!area) return;
     const user = store.getState().user;
     if (user) {
         const initial = (user.firstName || 'U')[0].toUpperCase();
@@ -331,12 +328,12 @@ function initLangHandlers() {
             LocalStorageService.saveLang(lang);
             updateLangUI(lang);
             renderAll();
-            
-            // Обновляем интерфейс профиля, если он открыт
-            if (profile.modal.classList.contains('open')) {
+
+            // Обновляем профиль, если он открыт
+            if (profile && profile.modal && profile.modal.classList.contains('open')) {
                 profile.updateUI();
             }
-            
+
             toast.show(`🌐 ${lang.toUpperCase()}`);
         });
     });
@@ -416,10 +413,9 @@ function initProductModalHandlers() {
     });
 }
 
-// === ГЛАВНОЕ: ГЛОБАЛЬНЫЙ ОБРАБОТЧИК КЛИКОВ (100% надёжный) ===
+// === ГЛАВНОЕ: ГЛОБАЛЬНЫЙ ОБРАБОТЧИК КЛИКОВ ===
 function initGlobalClickHandler() {
     document.addEventListener('click', function(e) {
-        // Проверяем клик по профилю
         const profileTrigger = e.target.closest('.profile-trigger');
         if (profileTrigger) {
             e.preventDefault();
@@ -434,7 +430,6 @@ function initGlobalClickHandler() {
             }
             return;
         }
-        // Проверяем клик по кнопке входа
         const loginTrigger = e.target.closest('.login-trigger');
         if (loginTrigger) {
             e.preventDefault();
@@ -474,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
-    initGlobalClickHandler(); // <- ВАЖНО
+    initGlobalClickHandler();
 
     // Экспорт JSON
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
