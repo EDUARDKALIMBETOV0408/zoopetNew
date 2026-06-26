@@ -4,7 +4,6 @@ import { rootReducer } from './store/reducers.js';
 import {
     setProducts, setUser, setOrders, setLang,
     setFilters, addToCart, removeFromCart, addOrder
-    // setPage не используется напрямую — удалён
 } from './store/actions.js';
 import { LocalStorageService } from './services/localStorageService.js';
 import { GitHubService } from './services/githubService.js';
@@ -43,7 +42,7 @@ const editProductModal = EditProductModal(store);
 const addProductModal = AddProductModal(store);
 
 // ============================================================
-// 3. Глобальные ссылки (через globalThis)
+// 3. Глобальные ссылки
 // ============================================================
 globalThis.store = store;
 globalThis.toast = toast;
@@ -131,7 +130,7 @@ function renderApp() {
         pag.id = 'paginationControls';
     }
     renderCartModal();
-    renderUserArea();
+    renderUserArea(); // обработчик навешивается внутри
     updateUITexts();
     updateCartBadge();
 }
@@ -208,8 +207,11 @@ function renderUserArea() {
         if (trigger) {
             trigger.addEventListener('click', function(e) {
                 e.stopPropagation();
+                console.log('Profile trigger clicked');
                 profile.open();
             });
+        } else {
+            console.warn('Profile trigger not found');
         }
     } else {
         area.innerHTML = `
@@ -219,6 +221,7 @@ function renderUserArea() {
         if (loginBtn) {
             loginBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
+                console.log('Login trigger clicked');
                 authModal.open();
             });
         }
