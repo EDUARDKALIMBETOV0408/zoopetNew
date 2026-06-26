@@ -17,6 +17,12 @@ export function Profile(store) {
     const profileStatus = document.getElementById('profileStatus');
     const adminPanel = document.getElementById('adminPanel');
 
+    const nameFieldsGroup = document.getElementById('nameFieldsGroup');
+    const phoneFieldGroup = document.getElementById('phoneFieldGroup');
+    const emailFieldGroup = document.getElementById('emailFieldGroup');
+    const addressesSection = document.getElementById('addressesSection');
+    const petsSection = document.getElementById('petsSection');
+
     let adminPanelComponent = null;
 
     // Закрытие
@@ -25,10 +31,30 @@ export function Profile(store) {
         if (e.target === modal) modal.classList.remove('open');
     });
 
+    // --- Управление видимостью полей в зависимости от роли ---
+    function updateVisibility(user) {
+        if (!user) return;
+        if (user.isAdmin) {
+            // Скрываем личные данные для админа
+            if (nameFieldsGroup) nameFieldsGroup.style.display = 'none';
+            if (phoneFieldGroup) phoneFieldGroup.style.display = 'none';
+            if (emailFieldGroup) emailFieldGroup.style.display = 'none';
+            if (addressesSection) addressesSection.style.display = 'none';
+            if (petsSection) petsSection.style.display = 'none';
+        } else {
+            // Показываем для обычного пользователя
+            if (nameFieldsGroup) nameFieldsGroup.style.display = 'block';
+            if (phoneFieldGroup) phoneFieldGroup.style.display = 'block';
+            if (emailFieldGroup) emailFieldGroup.style.display = 'block';
+            if (addressesSection) addressesSection.style.display = 'block';
+            if (petsSection) petsSection.style.display = 'block';
+        }
+    }
+
     // --- Адреса ---
     function renderAddresses() {
         const user = store.getState().user;
-        if (!user) return;
+        if (!user || user.isAdmin) return; // Админу адреса не показываем
         profileAddresses.innerHTML = '';
         if (!user.addresses) user.addresses = [];
         user.addresses.forEach((addr, index) => {
@@ -87,7 +113,7 @@ export function Profile(store) {
     // --- Питомцы ---
     function renderPets() {
         const user = store.getState().user;
-        if (!user) return;
+        if (!user || user.isAdmin) return; // Админу питомцев не показываем
         profilePets.innerHTML = '';
         if (!user.pets) user.pets = [];
         user.pets.forEach((pet, index) => {
@@ -139,11 +165,16 @@ export function Profile(store) {
         globalThis.showToast(t('toast_profile_saved'));
     });
 
-    // --- Сохранение профиля ---
+    // --- Сохранение профиля (только для обычных пользователей) ---
     document.getElementById('profileForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const user = store.getState().user;
         if (!user) return;
+        // Если админ, не сохраняем личные данные
+        if (user.isAdmin) {
+            globalThis.showToast('Администратору не нужно изменять эти данные');
+            return;
+        }
         user.firstName = profFirstName.value.trim();
         user.lastName = profLastName.value.trim();
         user.phone = profPhone.value.trim();
@@ -169,9 +200,7 @@ export function Profile(store) {
         if (user && user.isAdmin) {
             adminPanel.style.display = 'block';
             if (!adminPanelComponent) {
-                // Создаём экземпляр AdminPanel
                 adminPanelComponent = AdminPanel(store);
-                // Вставляем его DOM-элемент после заголовка h4
                 const header = adminPanel.querySelector('h4');
                 if (header) {
                     header.after(adminPanelComponent.element);
@@ -179,7 +208,6 @@ export function Profile(store) {
                     adminPanel.prepend(adminPanelComponent.element);
                 }
             }
-            // Обновляем содержимое админ-панели
             adminPanelComponent.update();
         } else {
             adminPanel.style.display = 'none';
@@ -194,12 +222,26 @@ export function Profile(store) {
             globalThis.showToast('Пожалуйста, войдите в аккаунт');
             return;
         }
+
+        // Заполняем поля (если они видны)
         profFirstName.value = user.firstName || '';
         profLastName.value = user.lastName || '';
         profPhone.value = user.phone || '';
         profEmail.value = user.email || '';
-        renderAddresses();
-        renderPets();
+
+        // Управляем видимостью блоков в зависимости от роли
+        updateVisibility(user);
+
+        // Рендерим адреса и питомцев (только если не админ)
+        if (!user.isAdmin) {
+            renderAddresses();
+            renderPets();
+        } else {
+            // Очищаем контейнеры, чтобы не осталось старых данных
+            profileAddresses.innerHTML = '';
+            profilePets.innerHTML = '';
+        }
+
         profileStatus.textContent = '';
         addAddressForm.classList.remove('open');
         addPetForm.classList.remove('open');
@@ -208,13 +250,20 @@ export function Profile(store) {
         console.log('✅ Профиль открыт');
     }
 
-    // Подписка на изменения (для перерисовки адресов/питомцев, если профиль открыт)
+    // Подписка на изменения (для перерисовки, если профиль открыт)
     store.subscribe((state) => {
         if (modal.classList.contains('open')) {
             const user = state.user;
             if (user) {
-                renderAddresses();
-                renderPets();
+                // Обновляем видимость при смене роли (если вдруг)
+                updateVisibility(user);
+                if (!user.isAdmin) {
+                    renderAddresses();
+                    renderPets();
+                } else {
+                    profileAddresses.innerHTML = '';
+                    profilePets.innerHTML = '';
+                }
                 renderAdminPanel();
             }
         }
