@@ -35,8 +35,8 @@ export function EditProductModal(store) {
         store.dispatch(updateProduct(updated));
         LocalStorageService.saveProducts(store.getState().products);
         modal.classList.remove('open');
-        window.renderAll();
-        window.showToast('✅ Товар обновлён!');
+        globalThis.renderAll();
+        globalThis.showToast('✅ Товар обновлён!');
     });
 
     function open(productId) {
