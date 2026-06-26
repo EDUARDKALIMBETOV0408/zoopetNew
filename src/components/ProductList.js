@@ -10,7 +10,7 @@ export function ProductList(store) {
     const render = () => {
         const state = store.getState();
         const { products, filters, page, itemsPerPage, lang } = state;
-        let filtered = products.filter(p => {
+        const filtered = products.filter(p => {
             if (filters.pet && p.category !== filters.pet) return false;
             if (filters.brand && p.brand !== filters.brand) return false;
             if (p.price_rsd > filters.priceMax) return false;
@@ -23,7 +23,6 @@ export function ProductList(store) {
         if (filters.sort === 'price_asc') filtered.sort((a, b) => a.price_rsd - b.price_rsd);
         else if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_rsd - a.price_rsd);
 
-        const totalPages = Math.ceil(filtered.length / itemsPerPage);
         const start = (page - 1) * itemsPerPage;
         const pageItems = filtered.slice(start, start + itemsPerPage);
 
@@ -54,14 +53,14 @@ export function ProductList(store) {
                 e.stopPropagation();
                 const id = parseInt(btn.dataset.id);
                 store.dispatch(addToCart(id, 1));
-                window.showToast(t('toast_added'));
+                globalThis.showToast(t('toast_added'));
             });
         });
         container.querySelectorAll('.product-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.add-to-cart')) return;
                 const id = parseInt(card.dataset.id);
-                if (window.openProductDetail) window.openProductDetail(id);
+                if (globalThis.openProductDetail) globalThis.openProductDetail(id);
             });
         });
     };
