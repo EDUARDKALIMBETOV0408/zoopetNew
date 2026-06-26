@@ -179,7 +179,10 @@ export function Profile(store) {
 
     function open() {
         const user = store.getState().user;
-        if (!user) return;
+        if (!user) {
+            console.warn('Profile open called but no user');
+            return;
+        }
         profFirstName.value = user.firstName || '';
         profLastName.value = user.lastName || '';
         profPhone.value = user.phone || '';
@@ -191,6 +194,7 @@ export function Profile(store) {
         addPetForm.classList.remove('open');
         renderAdminPanel();
         modal.classList.add('open');
+        console.log('Profile modal opened');
     }
 
     store.subscribe((state) => {
