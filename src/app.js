@@ -121,7 +121,7 @@ function renderApp() {
         pag.id = 'paginationControls';
     }
     renderCartModal();
-    renderUserArea();
+    renderUserArea(); // <-- здесь теперь навешивается обработчик
     updateUITexts();
     updateCartBadge();
 }
@@ -189,15 +189,32 @@ function renderUserArea() {
     if (user) {
         const initial = (user.firstName || 'U')[0].toUpperCase();
         area.innerHTML = `
-            <div class="user-area" id="profileBtn" title="Личный кабинет">
+            <div class="profile-trigger" title="Личный кабинет" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
                 <div class="avatar">${initial}</div>
                 <span class="user-name">${user.firstName || 'User'}</span>
             </div>
         `;
+        // Навешиваем обработчик на свежесозданный элемент
+        const trigger = area.querySelector('.profile-trigger');
+        if (trigger) {
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation(); // на всякий случай
+                console.log('Profile trigger clicked');
+                profile.open();
+            });
+        }
     } else {
         area.innerHTML = `
-            <button class="login-btn" id="loginBtn" data-i18n="login_btn">Войти</button>
+            <button class="login-trigger login-btn" data-i18n="login_btn">Войти</button>
         `;
+        const loginBtn = area.querySelector('.login-trigger');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('Login trigger clicked');
+                authModal.open();
+            });
+        }
     }
 }
 
@@ -403,25 +420,6 @@ function initProductModalHandlers() {
     });
 }
 
-// === Инициализация делегированных обработчиков для пользовательской зоны ===
-function initUserAreaHandlers() {
-    const userArea = document.getElementById('userArea');
-    if (!userArea) return;
-    userArea.addEventListener('click', function(e) {
-        // Клик по кнопке профиля
-        const profileBtn = e.target.closest('#profileBtn');
-        if (profileBtn) {
-            profile.open();
-            return;
-        }
-        // Клик по кнопке входа
-        const loginBtn = e.target.closest('#loginBtn');
-        if (loginBtn) {
-            authModal.open();
-        }
-    });
-}
-
 // === Общая функция обновления ===
 function renderAll() {
     renderApp();
@@ -436,6 +434,7 @@ store.subscribe((state) => {
         renderCartModal();
     }
     updateCartBadge();
+    // Если профиль открыт, можно обновить его содержимое, но это уже сделает сам Profile
 });
 
 // === Инициализация ===
@@ -447,7 +446,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
-    initUserAreaHandlers();   // <-- Один раз навешиваем делегирование
 
     // Экспорт JSON (из админки)
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
@@ -533,5 +531,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     updateTokenStatusUI();
 
-    console.log('🐾 ZooPet (рефакторинг с делегированием) загружен!');
+    console.log('🐾 ZooPet (рефакторинг) загружен!');
 });
