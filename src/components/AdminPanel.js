@@ -1,6 +1,6 @@
 // src/components/AdminPanel.js
-import { t } from '../services/i18n.js';
-import { formatPrice, getProductName } from '../utils/helpers.js';
+// t и formatPrice не используются, поэтому удалены
+import { getProductName } from '../utils/helpers.js';
 
 export function AdminPanel(store) {
     const container = document.createElement('div');
@@ -14,7 +14,6 @@ export function AdminPanel(store) {
         const orders = state.orders;
         const lang = state.lang;
 
-        // Обновляем список товаров
         const productsList = document.getElementById('adminProductsList');
         if (productsList) {
             let html = '<h5>Список товаров</h5>';
@@ -31,12 +30,11 @@ export function AdminPanel(store) {
             productsList.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = parseInt(this.dataset.id);
-                    if (window.openEditProductModal) window.openEditProductModal(id);
+                    if (globalThis.openEditProductModal) globalThis.openEditProductModal(id);
                 });
             });
         }
 
-        // Обновляем список заказов
         const ordersList = document.getElementById('adminOrdersList');
         if (ordersList) {
             if (orders.length === 0) {
@@ -63,7 +61,6 @@ export function AdminPanel(store) {
             ordersList.innerHTML = html;
         }
 
-        // Инициализация вкладок (один раз)
         if (!tabsInitialized) {
             const tabs = document.querySelectorAll('.admin-tabs button');
             tabs.forEach(btn => {
