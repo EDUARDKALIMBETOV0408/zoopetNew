@@ -1,5 +1,4 @@
 // src/components/AdminPanel.js
-// t и formatPrice не используются, поэтому удалены
 import { getProductName } from '../utils/helpers.js';
 
 export function AdminPanel(store) {
@@ -8,12 +7,13 @@ export function AdminPanel(store) {
 
     let tabsInitialized = false;
 
-    const render = () => {
+    function render() {
         const state = store.getState();
         const products = state.products;
         const orders = state.orders;
         const lang = state.lang;
 
+        // Обновляем список товаров
         const productsList = document.getElementById('adminProductsList');
         if (productsList) {
             let html = '<h5>Список товаров</h5>';
@@ -35,6 +35,7 @@ export function AdminPanel(store) {
             });
         }
 
+        // Обновляем список заказов
         const ordersList = document.getElementById('adminOrdersList');
         if (ordersList) {
             if (orders.length === 0) {
@@ -61,6 +62,7 @@ export function AdminPanel(store) {
             ordersList.innerHTML = html;
         }
 
+        // Инициализация вкладок (один раз)
         if (!tabsInitialized) {
             const tabs = document.querySelectorAll('.admin-tabs button');
             tabs.forEach(btn => {
@@ -75,9 +77,17 @@ export function AdminPanel(store) {
             });
             tabsInitialized = true;
         }
-    };
+    }
 
+    // Подписка на изменения store (автоматическое обновление)
     store.subscribe(render);
+
+    // Первый рендер
     render();
-    return container;
+
+    // Возвращаем объект с методом update и элементом
+    return {
+        update: render,
+        element: container
+    };
 }
