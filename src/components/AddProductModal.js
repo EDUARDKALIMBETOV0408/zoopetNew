@@ -58,14 +58,14 @@ export function AddProductModal(store) {
         modal.classList.remove('open');
         form.reset();
         statusEl.textContent = '';
-        window.renderAll();
-        window.showToast('✅ Товар добавлен!');
+        globalThis.renderAll();
+        globalThis.showToast('✅ Товар добавлен!');
 
         const token = GitHubService.getToken();
         if (token) {
             GitHubService.syncProducts(store.getState().products)
-                .then(() => window.showToast('✅ Синхронизировано с GitHub'))
-                .catch(err => window.showToast('⚠️ Ошибка синхронизации: ' + err.message));
+                .then(() => globalThis.showToast('✅ Синхронизировано с GitHub'))
+                .catch(err => globalThis.showToast('⚠️ Ошибка синхронизации: ' + err.message));
         }
     });
 
