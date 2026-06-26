@@ -84,7 +84,7 @@ export function ProductDetail(store, productId) {
         container.querySelector('.detail-add-btn').addEventListener('click', function() {
             const id = parseInt(this.dataset.id);
             store.dispatch(addToCart(id, 1));
-            window.showToast(t('toast_added'));
+            globalThis.showToast(t('toast_added'));
         });
 
         const submitBtn = container.querySelector('#submitReview');
@@ -106,12 +106,11 @@ export function ProductDetail(store, productId) {
                     comment: comment,
                     date: new Date().toLocaleDateString()
                 });
-                // Сохраняем в localStorage
                 import('../services/localStorageService.js').then(({ LocalStorageService }) => {
                     LocalStorageService.saveProducts(store.getState().products);
                 });
                 render();
-                window.showToast('✅ Отзыв добавлен!');
+                globalThis.showToast('✅ Отзыв добавлен!');
             });
         }
     };
