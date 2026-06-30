@@ -9,8 +9,10 @@ export function ProductList(store) {
 
     const render = () => {
         const state = store.getState();
-        const { products, filters, page, itemsPerPage, lang } = state;
-        const filtered = products.filter(p => {
+        const { products, filters, visibleCount, lang } = state;
+
+        // Фильтрация и сортировка
+        let filtered = products.filter(p => {
             if (filters.pet && p.category !== filters.pet) return false;
             if (filters.brand && p.brand !== filters.brand) return false;
             if (p.price_rsd > filters.priceMax) return false;
@@ -23,16 +25,16 @@ export function ProductList(store) {
         if (filters.sort === 'price_asc') filtered.sort((a, b) => a.price_rsd - b.price_rsd);
         else if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_rsd - a.price_rsd);
 
-        const start = (page - 1) * itemsPerPage;
-        const pageItems = filtered.slice(start, start + itemsPerPage);
+        // Берём только первые visibleCount
+        const visibleProducts = filtered.slice(0, visibleCount);
 
-        if (pageItems.length === 0) {
+        if (visibleProducts.length === 0) {
             container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px 0; color:var(--text-secondary);">${t('no_products')}</p>`;
             return;
         }
 
         let html = '';
-        pageItems.forEach(p => {
+        visibleProducts.forEach(p => {
             const name = getProductName(p, lang);
             const stockLabel = p.stock > 0 ? t('in_stock') : t('out_of_stock');
             html += `
