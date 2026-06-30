@@ -12,7 +12,7 @@ export const ActionTypes = {
     ADD_ORDER: 'ADD_ORDER',
     SET_LANG: 'SET_LANG',
     SET_FILTERS: 'SET_FILTERS',
-    SET_PAGE: 'SET_PAGE',
+    SET_VISIBLE_COUNT: 'SET_VISIBLE_COUNT', // новое
 };
 
 export const setProducts = (products) => ({ type: ActionTypes.SET_PRODUCTS, payload: products });
@@ -27,4 +27,5 @@ export const setOrders = (orders) => ({ type: ActionTypes.SET_ORDERS, payload: o
 export const addOrder = (order) => ({ type: ActionTypes.ADD_ORDER, payload: order });
 export const setLang = (lang) => ({ type: ActionTypes.SET_LANG, payload: lang });
 export const setFilters = (filters) => ({ type: ActionTypes.SET_FILTERS, payload: filters });
-export const setPage = (page) => ({ type: ActionTypes.SET_PAGE, payload: page });
+export const setVisibleCount = (count) => ({ type: ActionTypes.SET_VISIBLE_COUNT, payload: count });
+export const loadMore = () => ({ type: ActionTypes.LOAD_MORE }); // для увеличения на itemsPerPage
