@@ -1,9 +1,10 @@
-// src/app.js (финальная версия)
+// src/app.js (финальная версия с бесконечной прокруткой)
 import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
 import {
     setProducts, setUser, setOrders, setLang,
-    setFilters, addToCart, removeFromCart, addOrder
+    setFilters, addToCart, removeFromCart, addOrder,
+    setPage
 } from './store/actions.js';
 import { LocalStorageService } from './services/localStorageService.js';
 import { GitHubService } from './services/githubService.js';
@@ -17,7 +18,9 @@ import { AddProductModal } from './components/AddProductModal.js';
 import { Toast } from './components/Toast.js';
 import { formatPrice, getProductName } from './utils/helpers.js';
 
-// --- Store ---
+// ============================================================
+// 1. Инициализация Store
+// ============================================================
 const initialState = {
     products: [],
     cart: [],
@@ -26,18 +29,22 @@ const initialState = {
     lang: 'ru',
     filters: { pet: '', brand: '', priceMax: Infinity, search: '', sort: 'default' },
     page: 1,
-    itemsPerPage: 12,
+    itemsPerPage: 10, // изменено на 10 товаров на страницу
 };
 const store = createStore(initialState, rootReducer);
 
-// --- Компоненты ---
+// ============================================================
+// 2. Создание экземпляров компонентов
+// ============================================================
 const toast = Toast();
 const authModal = AuthModal(store);
 const profile = Profile(store);
 const editProductModal = EditProductModal(store);
 const addProductModal = AddProductModal(store);
 
-// --- Глобальные ссылки ---
+// ============================================================
+// 3. Глобальные ссылки
+// ============================================================
 globalThis.store = store;
 globalThis.toast = toast;
 globalThis.t = t;
@@ -51,8 +58,12 @@ globalThis.openAddProductModal = addProductModal.open;
 globalThis.openAuthModal = () => authModal.open();
 globalThis.openProfileModal = () => profile.open();
 
-// --- Загрузка данных ---
+// ============================================================
+// 4. Загрузка начальных данных
+// ============================================================
 async function loadInitialData() {
+    console.log('🔵 Загрузка начальных данных...');
+
     const savedLang = LocalStorageService.loadLang() || 'ru';
     store.dispatch(setLang(savedLang));
     setI18nLang(savedLang);
@@ -61,18 +72,32 @@ async function loadInitialData() {
     const user = LocalStorageService.loadUser();
     if (user) store.dispatch(setUser(user));
 
+    // Пытаемся загрузить товары из localStorage
     let products = LocalStorageService.loadProducts();
+    console.log('📦 Товары из localStorage:', products ? products.length : 0);
+
+    // Если нет — загружаем из products.json
     if (!products || products.length === 0) {
         try {
-            const resp = await fetch('products.json');
+            // Определяем базовый путь к файлу
+            const baseUrl = globalThis.location.pathname.replace(/\/[^/]*$/, '/');
+            const url = baseUrl + 'products.json';
+            console.log('🔄 Загрузка из:', url);
+            const resp = await fetch(url);
             if (resp.ok) {
                 products = await resp.json();
                 if (!Array.isArray(products)) products = [];
+                console.log('✅ Загружено из JSON:', products.length);
+            } else {
+                console.warn('❌ Не удалось загрузить products.json, статус:', resp.status);
+                products = [];
             }
-        } catch (_) {
+        } catch (err) {
+            console.error('❌ Ошибка загрузки products.json:', err);
             products = [];
         }
     }
+
     store.dispatch(setProducts(products));
     LocalStorageService.saveProducts(products);
 
@@ -80,6 +105,7 @@ async function loadInitialData() {
     store.dispatch(setOrders(orders));
 
     updateBrandFilter(products);
+    console.log('✅ Инициализация завершена, товаров:', products.length);
 }
 
 function updateBrandFilter(products) {
@@ -104,8 +130,11 @@ function updateLangUI(lang) {
     });
 }
 
-// --- Рендеринг ---
+// ============================================================
+// 5. Рендеринг
+// ============================================================
 function renderApp() {
+    console.log('🔄 renderApp() вызван');
     const productGrid = document.getElementById('productGrid');
     const paginationContainer = document.getElementById('paginationControls');
 
@@ -226,7 +255,9 @@ function updateCartBadge() {
     }
 }
 
-// --- Детали товара ---
+// ============================================================
+// 6. Детали товара (динамический импорт)
+// ============================================================
 function openProductDetail(productId) {
     const state = store.getState();
     const product = state.products.find(p => p.id === productId);
@@ -245,7 +276,9 @@ function openProductDetail(productId) {
         });
 }
 
-// --- Оформление заказа ---
+// ============================================================
+// 7. Оформление заказа
+// ============================================================
 function openCheckoutModal() {
     const state = store.getState();
     if (state.cart.length === 0) {
@@ -292,7 +325,9 @@ function calculateTotal() {
     return total;
 }
 
-// --- Обработчики ---
+// ============================================================
+// 8. Инициализация обработчиков (фильтры, язык, корзина, заказ, детали)
+// ============================================================
 function initFiltersHandlers() {
     const applyBtn = document.getElementById('applyFilters');
     const searchInput = document.getElementById('searchInput');
@@ -413,10 +448,70 @@ function initProductModalHandlers() {
     });
 }
 
-// === ЕДИНЫЙ ГЛОБАЛЬНЫЙ ОБРАБОТЧИК (НАДЁЖНЫЙ) ===
+// ============================================================
+// 9. Бесконечная прокрутка (Infinite Scroll)
+// ============================================================
+function initInfiniteScroll() {
+    let loading = false; // флаг, чтобы не было множественных запросов
+
+    const onScroll = () => {
+        const state = store.getState();
+        const { products, filters, page, itemsPerPage } = state;
+
+        // Фильтруем товары (аналогично как в ProductList)
+        let filtered = products.filter(p => {
+            if (filters.pet && p.category !== filters.pet) return false;
+            if (filters.brand && p.brand !== filters.brand) return false;
+            if (p.price_rsd > filters.priceMax) return false;
+            if (filters.search) {
+                const name = (p.name?.ru || '').toLowerCase();
+                if (!name.includes(filters.search.toLowerCase())) return false;
+            }
+            return true;
+        });
+        if (filters.sort === 'price_asc') filtered.sort((a, b) => a.price_rsd - b.price_rsd);
+        else if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_rsd - a.price_rsd);
+
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        if (page >= totalPages) return; // больше страниц нет
+
+        // Проверяем, достигнут ли низ страницы
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const threshold = 200; // загружаем за 200px до низа
+
+        if (scrollY + windowHeight >= documentHeight - threshold && !loading) {
+            loading = true;
+            console.log('🔄 Загрузка следующей страницы...');
+            store.dispatch(setPage(page + 1));
+            // Даем время на обновление DOM, затем снимаем флаг
+            setTimeout(() => {
+                loading = false;
+            }, 500);
+        }
+    };
+
+    // Подписываемся на событие прокрутки
+    window.addEventListener('scroll', onScroll);
+    // Также вызываем при изменении фильтров (чтобы сбросить состояние)
+    store.subscribe((state) => {
+        // Если фильтры изменились, сбрасываем страницу на 1 и обновляем прокрутку
+        // Но это уже обрабатывается в setFilters (page сбрасывается в редьюсере)
+        // Можно просто перепроверить при следующем скролле
+    });
+
+    // Небольшая задержка для первого скролла, чтобы сразу подгрузить, если товаров мало
+    setTimeout(onScroll, 300);
+    console.log('✅ Бесконечная прокрутка активирована');
+}
+
+// ============================================================
+// 10. Единый глобальный обработчик (для кнопок)
+// ============================================================
 function initGlobalHandlers() {
     document.addEventListener('click', function(e) {
-        // 1. Кнопка "Добавить товар"
+        // Кнопка "Добавить товар"
         const addBtn = e.target.closest('#openAddProductBtn');
         if (addBtn) {
             e.preventDefault();
@@ -433,7 +528,7 @@ function initGlobalHandlers() {
             return;
         }
 
-        // 2. Профиль (аватар/имя пользователя)
+        // Профиль
         const profileTrigger = e.target.closest('.profile-trigger');
         if (profileTrigger) {
             e.preventDefault();
@@ -449,7 +544,7 @@ function initGlobalHandlers() {
             return;
         }
 
-        // 3. Кнопка входа
+        // Кнопка входа
         const loginTrigger = e.target.closest('.login-trigger');
         if (loginTrigger) {
             e.preventDefault();
@@ -465,7 +560,9 @@ function initGlobalHandlers() {
     console.log('✅ Единый глобальный обработчик установлен');
 }
 
-// --- Обновление UI ---
+// ============================================================
+// 11. Обновление UI
+// ============================================================
 function renderAll() {
     renderApp();
     renderCartModal();
@@ -473,6 +570,9 @@ function renderAll() {
     updateCartBadge();
 }
 
+// ============================================================
+// 12. Подписка на изменения Store
+// ============================================================
 store.subscribe((_state) => {
     if (document.getElementById('cartModal').classList.contains('open')) {
         renderCartModal();
@@ -480,7 +580,9 @@ store.subscribe((_state) => {
     updateCartBadge();
 });
 
-// === ЗАПУСК ===
+// ============================================================
+// 13. Запуск приложения
+// ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     await loadInitialData();
     renderAll();
@@ -489,7 +591,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
-    initGlobalHandlers(); // <-- Единый обработчик
+    initGlobalHandlers();
+    initInfiniteScroll(); // <-- активируем бесконечную прокрутку
 
     // Экспорт JSON
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
