@@ -1,4 +1,4 @@
-// src/app.js (полная версия с исправлением)
+// src/app.js (финальная версия)
 import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
 import {
@@ -413,14 +413,15 @@ function initProductModalHandlers() {
     });
 }
 
-// === ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ДЛЯ КНОПКИ "ДОБАВИТЬ ТОВАР" (НАДЁЖНЫЙ) ===
-function initAddProductButtonHandler() {
+// === ЕДИНЫЙ ГЛОБАЛЬНЫЙ ОБРАБОТЧИК (НАДЁЖНЫЙ) ===
+function initGlobalHandlers() {
     document.addEventListener('click', function(e) {
+        // 1. Кнопка "Добавить товар"
         const addBtn = e.target.closest('#openAddProductBtn');
         if (addBtn) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔵 Кнопка "Добавить товар" нажата (глобальный обработчик)');
+            console.log('🔵 Нажата кнопка "Добавить товар"');
             if (typeof addProductModal.open === 'function') {
                 addProductModal.open();
             } else if (typeof globalThis.openAddProductModal === 'function') {
@@ -429,19 +430,15 @@ function initAddProductButtonHandler() {
                 console.error('❌ addProductModal.open не доступен');
                 toast.show('Ошибка: не удалось открыть форму добавления');
             }
+            return;
         }
-    });
-    console.log('✅ Глобальный обработчик для кнопки "Добавить товар" установлен');
-}
 
-// === ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ДЛЯ ПРОФИЛЯ (уже был) ===
-function initGlobalClickHandler() {
-    document.addEventListener('click', function(e) {
+        // 2. Профиль (аватар/имя пользователя)
         const profileTrigger = e.target.closest('.profile-trigger');
         if (profileTrigger) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔵 GLOBAL CLICK: profile trigger');
+            console.log('🔵 Клик по профилю');
             if (typeof profile.open === 'function') {
                 profile.open();
             } else if (typeof globalThis.openProfileModal === 'function') {
@@ -451,11 +448,13 @@ function initGlobalClickHandler() {
             }
             return;
         }
+
+        // 3. Кнопка входа
         const loginTrigger = e.target.closest('.login-trigger');
         if (loginTrigger) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔵 GLOBAL CLICK: login trigger');
+            console.log('🔵 Клик по кнопке входа');
             if (typeof authModal.open === 'function') {
                 authModal.open();
             } else if (typeof globalThis.openAuthModal === 'function') {
@@ -463,7 +462,7 @@ function initGlobalClickHandler() {
             }
         }
     });
-    console.log('✅ Global click handler installed');
+    console.log('✅ Единый глобальный обработчик установлен');
 }
 
 // --- Обновление UI ---
@@ -490,8 +489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartHandlers();
     initCheckoutHandlers();
     initProductModalHandlers();
-    initGlobalClickHandler();
-    initAddProductButtonHandler(); // <-- НОВЫЙ ОБРАБОТЧИК
+    initGlobalHandlers(); // <-- Единый обработчик
 
     // Экспорт JSON
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
