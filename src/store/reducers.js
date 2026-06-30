@@ -8,8 +8,8 @@ const initialState = {
     orders: [],
     lang: 'ru',
     filters: { pet: '', brand: '', priceMax: Infinity, search: '', sort: 'default' },
-    page: 1,
-    itemsPerPage: 12,
+    visibleCount: 10, // вместо page
+    itemsPerPage: 10,
 };
 
 export function rootReducer(state = initialState, action) {
@@ -54,9 +54,19 @@ export function rootReducer(state = initialState, action) {
         case ActionTypes.SET_LANG:
             return { ...state, lang: action.payload };
         case ActionTypes.SET_FILTERS:
-            return { ...state, filters: { ...state.filters, ...action.payload }, page: 1 };
-        case ActionTypes.SET_PAGE:
-            return { ...state, page: action.payload };
+            // при смене фильтров сбрасываем visibleCount на начальное значение
+            return {
+                ...state,
+                filters: { ...state.filters, ...action.payload },
+                visibleCount: state.itemsPerPage, // сброс
+            };
+        case ActionTypes.SET_VISIBLE_COUNT:
+            return { ...state, visibleCount: action.payload };
+        case ActionTypes.LOAD_MORE:
+            return {
+                ...state,
+                visibleCount: Math.min(state.visibleCount + state.itemsPerPage, state.products.length)
+            };
         default:
             return state;
     }
