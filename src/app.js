@@ -1,4 +1,4 @@
-// src/app.js
+// src/app.js (полная версия с исправлением)
 import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
 import {
@@ -183,7 +183,10 @@ function renderCartModal() {
 
 function renderUserArea() {
     const area = document.getElementById('userArea');
-    if (!area) return;
+    if (!area) {
+        console.error('userArea not found!');
+        return;
+    }
     const user = store.getState().user;
     if (user) {
         const initial = (user.firstName || 'U')[0].toUpperCase();
@@ -328,12 +331,9 @@ function initLangHandlers() {
             LocalStorageService.saveLang(lang);
             updateLangUI(lang);
             renderAll();
-
-            // Обновляем профиль, если он открыт
-            if (profile && profile.modal && profile.modal.classList.contains('open')) {
+            if (profile.modal.classList.contains('open')) {
                 profile.updateUI();
             }
-
             toast.show(`🌐 ${lang.toUpperCase()}`);
         });
     });
@@ -413,7 +413,28 @@ function initProductModalHandlers() {
     });
 }
 
-// === ГЛАВНОЕ: ГЛОБАЛЬНЫЙ ОБРАБОТЧИК КЛИКОВ ===
+// === ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ДЛЯ КНОПКИ "ДОБАВИТЬ ТОВАР" (НАДЁЖНЫЙ) ===
+function initAddProductButtonHandler() {
+    document.addEventListener('click', function(e) {
+        const addBtn = e.target.closest('#openAddProductBtn');
+        if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔵 Кнопка "Добавить товар" нажата (глобальный обработчик)');
+            if (typeof addProductModal.open === 'function') {
+                addProductModal.open();
+            } else if (typeof globalThis.openAddProductModal === 'function') {
+                globalThis.openAddProductModal();
+            } else {
+                console.error('❌ addProductModal.open не доступен');
+                toast.show('Ошибка: не удалось открыть форму добавления');
+            }
+        }
+    });
+    console.log('✅ Глобальный обработчик для кнопки "Добавить товар" установлен');
+}
+
+// === ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ДЛЯ ПРОФИЛЯ (уже был) ===
 function initGlobalClickHandler() {
     document.addEventListener('click', function(e) {
         const profileTrigger = e.target.closest('.profile-trigger');
@@ -470,6 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCheckoutHandlers();
     initProductModalHandlers();
     initGlobalClickHandler();
+    initAddProductButtonHandler(); // <-- НОВЫЙ ОБРАБОТЧИК
 
     // Экспорт JSON
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
