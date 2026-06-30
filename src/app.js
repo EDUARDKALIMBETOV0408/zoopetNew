@@ -1,16 +1,15 @@
-// src/app.js (финальная версия с бесконечной прокруткой)
+// src/app.js
 import { createStore } from './store/index.js';
 import { rootReducer } from './store/reducers.js';
 import {
     setProducts, setUser, setOrders, setLang,
     setFilters, addToCart, removeFromCart, addOrder,
-    setPage
+    loadMore
 } from './store/actions.js';
 import { LocalStorageService } from './services/localStorageService.js';
 import { GitHubService } from './services/githubService.js';
 import { setLang as setI18nLang, t } from './services/i18n.js';
 import { ProductList } from './components/ProductList.js';
-import { Pagination } from './components/Pagination.js';
 import { AuthModal } from './components/AuthModal.js';
 import { Profile } from './components/Profile.js';
 import { EditProductModal } from './components/EditProductModal.js';
@@ -28,8 +27,8 @@ const initialState = {
     orders: [],
     lang: 'ru',
     filters: { pet: '', brand: '', priceMax: Infinity, search: '', sort: 'default' },
-    page: 1,
-    itemsPerPage: 10, // изменено на 10 товаров на страницу
+    visibleCount: 10,
+    itemsPerPage: 10,
 };
 const store = createStore(initialState, rootReducer);
 
@@ -63,7 +62,6 @@ globalThis.openProfileModal = () => profile.open();
 // ============================================================
 async function loadInitialData() {
     console.log('🔵 Загрузка начальных данных...');
-
     const savedLang = LocalStorageService.loadLang() || 'ru';
     store.dispatch(setLang(savedLang));
     setI18nLang(savedLang);
@@ -72,14 +70,11 @@ async function loadInitialData() {
     const user = LocalStorageService.loadUser();
     if (user) store.dispatch(setUser(user));
 
-    // Пытаемся загрузить товары из localStorage
     let products = LocalStorageService.loadProducts();
     console.log('📦 Товары из localStorage:', products ? products.length : 0);
 
-    // Если нет — загружаем из products.json
     if (!products || products.length === 0) {
         try {
-            // Определяем базовый путь к файлу
             const baseUrl = globalThis.location.pathname.replace(/\/[^/]*$/, '/');
             const url = baseUrl + 'products.json';
             console.log('🔄 Загрузка из:', url);
@@ -134,19 +129,13 @@ function updateLangUI(lang) {
 // 5. Рендеринг
 // ============================================================
 function renderApp() {
-    console.log('🔄 renderApp() вызван');
+    console.log('🔄 renderApp()');
     const productGrid = document.getElementById('productGrid');
-    const paginationContainer = document.getElementById('paginationControls');
-
+    // Пагинация удалена, контейнер не нужен
     if (productGrid) {
         const list = ProductList(store);
         productGrid.parentNode.replaceChild(list, productGrid);
         list.id = 'productGrid';
-    }
-    if (paginationContainer) {
-        const pag = Pagination(store);
-        paginationContainer.parentNode.replaceChild(pag, paginationContainer);
-        pag.id = 'paginationControls';
     }
     renderCartModal();
     renderUserArea();
@@ -326,7 +315,7 @@ function calculateTotal() {
 }
 
 // ============================================================
-// 8. Инициализация обработчиков (фильтры, язык, корзина, заказ, детали)
+// 8. Инициализация обработчиков
 // ============================================================
 function initFiltersHandlers() {
     const applyBtn = document.getElementById('applyFilters');
@@ -452,13 +441,13 @@ function initProductModalHandlers() {
 // 9. Бесконечная прокрутка (Infinite Scroll)
 // ============================================================
 function initInfiniteScroll() {
-    let loading = false; // флаг, чтобы не было множественных запросов
+    let loading = false;
 
     const onScroll = () => {
         const state = store.getState();
-        const { products, filters, page, itemsPerPage } = state;
+        const { products, filters, visibleCount, itemsPerPage } = state;
 
-        // Фильтруем товары (аналогично как в ProductList)
+        // Фильтруем товары для подсчёта общего количества
         let filtered = products.filter(p => {
             if (filters.pet && p.category !== filters.pet) return false;
             if (filters.brand && p.brand !== filters.brand) return false;
@@ -472,36 +461,33 @@ function initInfiniteScroll() {
         if (filters.sort === 'price_asc') filtered.sort((a, b) => a.price_rsd - b.price_rsd);
         else if (filters.sort === 'price_desc') filtered.sort((a, b) => b.price_rsd - a.price_rsd);
 
-        const totalPages = Math.ceil(filtered.length / itemsPerPage);
-        if (page >= totalPages) return; // больше страниц нет
+        const totalFiltered = filtered.length;
+        if (visibleCount >= totalFiltered) return; // все уже показаны
 
         // Проверяем, достигнут ли низ страницы
         const scrollY = window.scrollY;
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
-        const threshold = 200; // загружаем за 200px до низа
+        const threshold = 200;
 
         if (scrollY + windowHeight >= documentHeight - threshold && !loading) {
             loading = true;
-            console.log('🔄 Загрузка следующей страницы...');
-            store.dispatch(setPage(page + 1));
-            // Даем время на обновление DOM, затем снимаем флаг
+            console.log('🔄 Загрузка дополнительных товаров...');
+            store.dispatch(loadMore());
             setTimeout(() => {
                 loading = false;
             }, 500);
         }
     };
 
-    // Подписываемся на событие прокрутки
     window.addEventListener('scroll', onScroll);
-    // Также вызываем при изменении фильтров (чтобы сбросить состояние)
+    // При изменении фильтров или добавлении товаров тоже проверяем
     store.subscribe((state) => {
-        // Если фильтры изменились, сбрасываем страницу на 1 и обновляем прокрутку
-        // Но это уже обрабатывается в setFilters (page сбрасывается в редьюсере)
-        // Можно просто перепроверить при следующем скролле
+        // Можно также вызвать onScroll при изменении состояния
+        // чтобы подгрузить, если после обновления стало мало товаров
+        setTimeout(onScroll, 100);
     });
-
-    // Небольшая задержка для первого скролла, чтобы сразу подгрузить, если товаров мало
+    // Первая проверка через небольшую задержку
     setTimeout(onScroll, 300);
     console.log('✅ Бесконечная прокрутка активирована');
 }
@@ -522,13 +508,12 @@ function initGlobalHandlers() {
             } else if (typeof globalThis.openAddProductModal === 'function') {
                 globalThis.openAddProductModal();
             } else {
-                console.error('❌ addProductModal.open не доступен');
                 toast.show('Ошибка: не удалось открыть форму добавления');
             }
             return;
         }
 
-        // Профиль
+        // Профиль (аватар/имя пользователя)
         const profileTrigger = e.target.closest('.profile-trigger');
         if (profileTrigger) {
             e.preventDefault();
@@ -538,8 +523,6 @@ function initGlobalHandlers() {
                 profile.open();
             } else if (typeof globalThis.openProfileModal === 'function') {
                 globalThis.openProfileModal();
-            } else {
-                console.error('❌ Не удалось открыть профиль');
             }
             return;
         }
@@ -592,7 +575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCheckoutHandlers();
     initProductModalHandlers();
     initGlobalHandlers();
-    initInfiniteScroll(); // <-- активируем бесконечную прокрутку
+    initInfiniteScroll();
 
     // Экспорт JSON
     document.getElementById('exportJsonBtn').addEventListener('click', function() {
@@ -612,6 +595,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast.show('📥 JSON скачан!');
     });
 
+    // Загрузка JSON
     document.getElementById('loadJsonBtn').addEventListener('click', async function() {
         const status = document.getElementById('loadJsonStatus');
         try {
